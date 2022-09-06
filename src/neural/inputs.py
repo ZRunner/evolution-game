@@ -46,10 +46,10 @@ class LifeInputNeuron(InputNeuron):
 
 class LightInputNeuron(InputNeuron):
     "Corresponds to the level of light at the position of the creature"
-    name = "Light e."
+    name = "Light"
 
     def update(self, subject, context):
-        self.value = context.get_light_level_for_creature(subject)
+        self.value = sigmoid(context.get_light_level_for_creature(subject) * 0.02)
 
 class FoodDistanceInputNeuron(InputNeuron):
     "Corresponds to the distance of the nearest food"

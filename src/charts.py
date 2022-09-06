@@ -79,12 +79,12 @@ class ChartsManager:
             "fps": ChartData("FPS"),
             "avg_vel": ChartData("Average Velocity"),
             "avg_acc": ChartData("Average Acceleration"),
-            # "avg_acc_sigma": ChartData("Average Acceleration Standard Deviation"),
             "creatures_count": ChartData("Creatures count"),
             "avg_size": ChartData("Average Size"),
             "avg_energy": ChartData("Average Energy"),
             "avg_life": ChartData("Average Life Percentage"),
             "foods_total": ChartData("Total food value"),
+            "avg_light": ChartData("Average light"),
         }
         self.indexes = list(self.datas.keys())
         self.index = 0
@@ -167,5 +167,8 @@ class ChartsManager:
             # Total Food Value
             food = sum(point.quantity for point in foods)
             self.datas["foods_total"].append_value(food)
+            # Average light emitted
+            lights_e = [creature.light_emission for creature in creatures]
+            self.datas["avg_light"].append_value(sum(lights_e)/len(lights_e))
         elif self.datas["creatures_count"].data[-2] > 0:
             self.datas["creatures_count"].append_value(len(creatures))

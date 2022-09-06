@@ -46,4 +46,8 @@ class ContextManager:
         return best
     
     def get_light_level_for_creature(self, creature: Creature):
-        return 0.0
+        value = 0.0
+        for neighbor in self.creatures:
+            if neighbor.creature_id != creature.creature_id and neighbor.light_emission > 0.0 and creature.pos.distance_to(neighbor.pos) < neighbor.light_emission:
+                value += neighbor.light_emission - creature.pos.distance_to(neighbor.pos)
+        return value

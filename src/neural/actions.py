@@ -17,7 +17,7 @@ class MoveYActionNeuron(ActionNeuron):
 
 class EmitLightActionNeuron(ActionNeuron):
     "Emit some light visible by other creatures"
-    name = "Light"
+    name = "Light e."
 
     def act(self, creature):
         creature.light_emission = round(

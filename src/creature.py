@@ -230,7 +230,7 @@ class Creature(Sprite):
         "Draw a circle representing the emitted light"
         if self.light_emission > 0:
             # print(self.creature_id, self.light_emission)
-            draw_circle_gradient(surface, self.rectangle.center, self.light_emission, Color(255, 230, 100, 50))
+            draw_circle_gradient(surface, self.rectangle.center, self.light_emission, Color(255, 230, 100, min(255, self.light_emission)))
 
     def draw(self, surface: Surface, *, debug: bool=False, is_selected: bool=False):
         "Draw the sprite"
