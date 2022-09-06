@@ -85,6 +85,7 @@ class ChartsManager:
             "avg_life": ChartData("Average Life Percentage"),
             "foods_total": ChartData("Total food value"),
             "avg_light": ChartData("Average light"),
+            "generations": ChartData("Average creature generation"),
         }
         self.indexes = list(self.datas.keys())
         self.index = 0
@@ -170,5 +171,8 @@ class ChartsManager:
             # Average light emitted
             lights_e = [creature.light_emission for creature in creatures]
             self.datas["avg_light"].append_value(sum(lights_e)/len(lights_e))
+            # Average creature generation
+            generations = [creature.generation for creature in creatures]
+            self.datas["generations"].append_value(sum(generations)/len(generations))
         elif self.datas["creatures_count"].data[-2] > 0:
             self.datas["creatures_count"].append_value(len(creatures))

@@ -48,9 +48,10 @@ class DamageDisplayer:
 class Creature(Sprite):
     "A simple creature"
 
-    def __init__(self, creature_id: int):
+    def __init__(self, creature_id: int, generation: int):
         super().__init__()
         self.creature_id = creature_id
+        self.generation = generation
         self.size = max(config.MIN_CREATURE_SIZE, round(gauss(
             config.CREATURE_SIZE_AVG, config.CREATURE_SIZE_SIGMA)))
         self.damager = DamageDisplayer(self.size)

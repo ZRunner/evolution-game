@@ -6,7 +6,7 @@ from . import config
 class ContextManager:
 
     def __init__(self):
-        self.creatures: list[Creature] = [Creature(i) for i in range(config.CREATURES_COUNT)]
+        self.creatures: list[Creature] = [Creature(i, 0) for i in range(config.CREATURES_COUNT)]
         self.food_generators: list[FoodGenerator] = [
             FoodGenerator(None, 160, 0.7),
             FoodGenerator(None, 80, 0.4),

@@ -35,6 +35,7 @@ class PanelsManager:
         self.surface.blit(text, Vector2(self.rect.topleft) + Vector2(100, 25))
         # Info
         texts = [
+            f"Generation {creature.generation}",
             f"Size: {creature.size}",
             f"Position: ({creature.pos.x:.0f}, {creature.pos.y:.0f})",
             f"Speed: {creature.vel.length()*1000:.1f}p/s",
