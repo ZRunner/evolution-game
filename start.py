@@ -105,8 +105,12 @@ def main():
 
         if show_graphs:
             charts.draw_graph()
+
         if not is_pause:
+            # save datas for charts
             charts.store_datas(clock, context.creatures, context.foods)
+            # make children or smth
+            context.reproduce_creatures()
 
         pygame.display.update()
         delta_t = clock.tick(config.FPS)

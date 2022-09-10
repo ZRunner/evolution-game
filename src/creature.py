@@ -1,7 +1,7 @@
 from math import sqrt
 import time
-from random import gauss, randint, random, randrange
-from typing import Optional, TYPE_CHECKING
+from random import gauss, randint, random, randrange, uniform
+from typing import Optional, TYPE_CHECKING, TypedDict
 
 from pygame import Color, Vector2, draw
 from pygame.font import SysFont
@@ -45,50 +45,101 @@ class DamageDisplayer:
         self.surface.fill(Color(255, 0, 0))
         surface.blit(self.surface, rectangle)
 
+
+def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id: int) -> "Creature":
+    "Use some random algorithms to merge two creatures into a new 'child'"
+    size = randint(min(parent1.size, parent2.size), max(parent1.size, parent2.size))
+    max_life = randint(min(parent1.max_life, parent2.max_life), max(parent1.max_life, parent2.max_life))
+    life_regen_cost = randint(min(parent1.life_regen_cost, parent2.life_regen_cost), max(parent1.life_regen_cost, parent2.life_regen_cost))
+    digestion_efficiency = uniform(min(parent1.digestion_efficiency, parent2.digestion_efficiency), max(parent1.digestion_efficiency, parent2.digestion_efficiency))
+    digestion_speed = uniform(min(parent1.digestion_speed, parent2.digestion_speed), max(parent1.digestion_speed, parent2.digestion_speed))
+    vision = randint(min(parent1.vision, parent2.vision), max(parent1.vision, parent2.vision))
+    generation = max(parent1.generation, parent2.generation) + 1
+    return Creature(
+        creature_id,
+        generation,
+        {
+            "size": size,
+            "network": NeuralNetwork.from_parents(parent1.network, parent2.network),
+            "max_life": max_life,
+            "life_regen_cost": life_regen_cost,
+            "digestion_efficiency": digestion_efficiency,
+            "digestion_speed": digestion_speed,
+            "vision": vision,
+        }
+    )
+
+
+class CreatureGeneratedAttributes(TypedDict):
+    size: int
+    network: NeuralNetwork
+    max_life: int
+    life_regen_cost: int
+    digestion_efficiency: float
+    digestion_speed: float
+    vision: int
+
 class Creature(Sprite):
     "A simple creature"
 
-    def __init__(self, creature_id: int, generation: int):
+    def __init__(self, creature_id: int, generation: int, kwargs: Optional[CreatureGeneratedAttributes] = None):
         super().__init__()
         self.creature_id = creature_id
         self.generation = generation
-        self.size = max(config.MIN_CREATURE_SIZE, round(gauss(
-            config.CREATURE_SIZE_AVG, config.CREATURE_SIZE_SIGMA)))
-        self.damager = DamageDisplayer(self.size)
-        self.network = NeuralNetwork(
-            randint(config.CREATURES_MIN_CONNECTIONS, config.CREATURES_MAX_CONNECTIONS),
-            randrange(config.CREATURES_MAX_HIDDEN_NEURONS)
-        )
 
-        self.max_life = 10 + randrange(self.size * 10)
-        self.life = self.max_life
-        self.energy = config.CREATURE_STARTING_ENERGY
-        self.life_regen_cost = round(self.size * randint(1, 5)) + 1
-        self.digesting = config.CREATURE_MIN_STARTING_DIGESTING_POINTS + self.size
-        self.digestion_efficiency = round(random() * 1.8 + 0.2, 2)
-        self.digestion_speed = round(random() * 4 + 0.8, 1)
-        self.vision = round(random() * 124 + 1)
+        # generated values
+        if kwargs:
+            self.size = kwargs.get("size")
+            self.network = kwargs.get("network")
+            self.max_life = kwargs.get("max_life")
+            self.life_regen_cost = kwargs.get("life_regen_cost")
+            self.digestion_efficiency = round(kwargs.get("digestion_efficiency"), 2)
+            self.digestion_speed = round(kwargs.get("digestion_speed"), 1)
+            self.vision = kwargs.get("vision")
+        else:
+            self.size = max(config.MIN_CREATURE_SIZE, round(gauss(
+                config.CREATURE_SIZE_AVG, config.CREATURE_SIZE_SIGMA)))
+            self.network = NeuralNetwork(
+                randint(config.CREATURES_MIN_CONNECTIONS, config.CREATURES_MAX_CONNECTIONS),
+                randrange(config.CREATURES_MAX_HIDDEN_NEURONS)
+            )
+            self.max_life = 10 + randrange(self.size * 10)
+            self.life_regen_cost = round(self.size * randint(1, 5)) + 1
+            self.digestion_efficiency = round(random() * 1.8 + 0.2, 2)
+            self.digestion_speed = round(random() * 4 + 0.8, 1)
+            self.vision = round(random() * 124 + 1)
 
         # neurons outputs
         self.own_acceleration = Vector2(0, 0)
         self.light_emission = 0.0
         self.ready_for_reproduction: bool = False
 
+        # fixed attributes
+        self.life = self.max_life
+        self.energy = config.CREATURE_STARTING_ENERGY
+        self.digesting = config.CREATURE_MIN_STARTING_DIGESTING_POINTS + self.size
         self.color = self.calcul_color()
         self.font = SysFont("Arial", 12)
         self.surf = Surface((self.size, self.size))
         self.surf.fill(self.color)
         self.rectangle = self.surf.get_rect(
             center=(randrange(config.WIDTH), randrange(config.HEIGHT)))
+        self.damager = DamageDisplayer(self.size)
+        self.last_reproduction = round(time.time())
+        # some vectors
         self.pos = Vector2(self.rectangle.center)
         self.vel = Vector2(0, 0)
         self.acc = Vector2(0, 0)
         self.deceleration = Vector2(0, 0)
 
+    @property
+    def can_repro(self):
+        return self.ready_for_reproduction and time.time() - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
+
     def calcul_color(self) -> Color:
         "Calcul the creature color based on its specs"
         life = min(255, 255 * self.max_life / 130)
-        neurons_count = 255 * self.network.neurons_count / (config.CREATURES_MAX_CONNECTIONS + 5)
+        neurons_count = min(255, 255 * self.network.neurons_count / (config.CREATURES_MAX_CONNECTIONS + 5))
         third = 255
         return Color(f'#{int(life):02X}{int(neurons_count):02X}{third:02X}')
 

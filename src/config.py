@@ -49,4 +49,7 @@ CREATURES_MAX_HIDDEN_NEURONS = 20
 CREATURE_MAX_LIGHT_DISTANCE_EMISSION = 200
 
 # Minimum neuron value for a creature to reproduce with a partner
-CREATURE_MIN_REPRODUCTION_STATE = 0.6
+CREATURE_MIN_REPRODUCTION_STATE = 0.2
+
+# Minimum time in seconds between two reproductions from the same creature
+CREATURE_REPRO_COOLDOWN = 7

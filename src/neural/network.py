@@ -1,6 +1,7 @@
 from copy import deepcopy
-from random import choice, random
+from random import choice, randint, random
 from typing import Optional, Union, TYPE_CHECKING
+from networkx.exception import NetworkXError
 
 
 from .graph import NeuralNetworkGraph
@@ -30,7 +31,7 @@ ACTION_NEURONS = [
     actions.MoveXActionNeuron(),
     actions.MoveYActionNeuron(),
     actions.EmitLightActionNeuron(),
-    # actions.ReadyForReproductionActionNeuron(),
+    actions.ReadyForReproductionActionNeuron(),
 ]
 
 AnyNeuron = Union[InputNeuron, TransitionNeuron]
@@ -38,6 +39,31 @@ AnyNeuron = Union[InputNeuron, TransitionNeuron]
 
 class NeuralNetworkGenerationAgent:
     "Manage generating new neural networks"
+    
+    @classmethod
+    def merge(cls, parent1: "NeuralNetwork", parent2: "NeuralNetwork"):
+        "Create a new neural network from 2 given parents"
+        new_network = cls(0, 0)
+        new_network.connections_number = randint(min(len(parent1.wires), len(parent2.wires)), max(len(parent1.wires), len(parent2.wires)))
+
+        new_network.graph = NeuralNetworkGraph()
+        new_network.wires: list[tuple[AnyNeuron, float, TransitionNeuron]] = []
+        wires_pool = parent1.wires + parent2.wires
+
+        # make sure to keep only one version of each neuron by name
+        neurons_pool = [n for wire in wires_pool for n in wire if isinstance(n, AnyNeuron)]
+        for neuron in neurons_pool:
+            wires_pool = [[n if isinstance(n, float) or n.name != neuron.name else neuron for n in wire] for wire in wires_pool]
+
+        while len(new_network.wires) < new_network.connections_number:
+            while len(new_network.wires) < new_network.connections_number or len(new_network.input_neurons) == 0 or len(new_network.output_neurons) == 0:
+                wire = choice([w for w in wires_pool if w not in new_network.wires])
+                new_network.add_wire(*wire)
+            new_network.cleanup_wires()
+        
+        return new_network.wires
+
+
     def __init__(self, connections: int, max_hidden_neurons: int):
         self.connections_number = connections
 
@@ -82,7 +108,10 @@ class NeuralNetworkGenerationAgent:
                 to_remove.add(neuron)
         # remove any output parent with no predecessor
         for neuron in self.output_neurons:
-            preds = list(self.graph.predecessors(neuron))
+            try:
+                preds = list(self.graph.predecessors(neuron))
+            except NetworkXError as err:
+                raise err
             if len(preds) == 0:
                 to_remove.add(neuron)
 
@@ -146,6 +175,21 @@ class NeuralNetworkGenerationAgent:
 
 class NeuralNetwork:
     "Network of neurons (yes seriously)"
+
+    @classmethod
+    def from_parents(cls, parent1: "NeuralNetwork", parent2: "NeuralNetwork"):
+        "Merge two neural networks to create a new one"
+        new_element = cls(0, 0)
+        new_element.graph = NeuralNetworkGraph()
+        new_element.wires: list[tuple[AnyNeuron, float, TransitionNeuron]] = []
+
+        wires = NeuralNetworkGenerationAgent.merge(parent1, parent2)
+        for wire in wires:
+            new_element.add_wire(*wire)
+
+        new_element.last_updated: set[AnyNeuron] = set(new_element.input_neurons)
+        return new_element
+        
 
     def __init__(self, connections: int, max_hidden_neurons: int):
         self.graph = NeuralNetworkGraph()
