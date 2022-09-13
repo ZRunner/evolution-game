@@ -1,13 +1,17 @@
 import time
+from multiprocessing.pool import Pool
 from typing import Optional
+
+from . import config
 from .creature import Creature, creature_reproduction
 from .food import FoodGenerator, FoodPoint
-from . import config
+from .mp_utils import CreatureProcessMove, mp_execute_move
+
 
 class ContextManager:
 
     def __init__(self):
-        self.creatures: list[Creature] = [Creature(i, 0) for i in range(config.CREATURES_COUNT)]
+        self.creatures: dict[int, Creature] = {i: Creature(i, 0) for i in range(config.CREATURES_COUNT)}
         self.highest_creature_id = config.CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
             FoodGenerator(None, 160, 0.7),
@@ -19,12 +23,12 @@ class ContextManager:
     def update_creatures_energies(self):
         "Update creatures energies and life, and remove killed ones"
         to_die: list[Creature] = []
-        for entity in self.creatures:
+        for entity in self.creatures.values():
             entity.update_energy()
             if entity.life <= 0:
                 to_die.append(entity)
         for entity in to_die:
-            self.creatures.remove(entity)
+            del self.creatures[entity]
     
     def generate_food(self):
         "Generate food points around food generators"
@@ -51,7 +55,7 @@ class ContextManager:
     def get_light_level_for_creature(self, creature: Creature):
         "Get the current light level at the position of a creature"
         value = 0.0
-        for neighbor in self.creatures:
+        for neighbor in self.creatures.values():
             if neighbor.creature_id != creature.creature_id and neighbor.light_emission > 0.0 and creature.pos.distance_to(neighbor.pos) < neighbor.light_emission:
                 value += neighbor.light_emission - creature.pos.distance_to(neighbor.pos)
         return value
@@ -59,10 +63,11 @@ class ContextManager:
     def reproduce_creatures(self):
         "If two creatures are in contact and ready to reproduce, make them have a child"
         children: set[Creature] = set()
-        for i, creature1 in enumerate(self.creatures):
+        creatures = list(self.creatures.values())
+        for i, creature1 in enumerate(creatures):
             if len(children) > 20:
                 break
-            for creature2 in self.creatures[i+1:]:
+            for creature2 in creatures[i+1:]:
                 if len(children) > 20:
                     break
                 if creature1.can_repro and creature2.can_repro and creature1.rectangle.colliderect(creature2.rectangle):
@@ -81,6 +86,14 @@ class ContextManager:
         # add every new child into the Great List of Creatures
         children = list(children)[:10]
         for child in children:
-            self.creatures.append(child)
+            self.creatures[child.creature_id] = child
         if len(children):
             print(len(children), "new creatures born")
+    
+    def move_creatures(self, pool: Pool, delta_t: int):
+        arguments: list[tuple[CreatureProcessMove, int]] = []
+        for creature in self.creatures.values():
+            creature.update_network(self)
+            arguments.append((CreatureProcessMove(creature), delta_t))
+        for i in pool.imap_unordered(mp_execute_move, arguments, chunksize=40):
+            self.creatures[i.creature_id] = i.apply_to_creature(self.creatures[i.creature_id])

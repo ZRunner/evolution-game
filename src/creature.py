@@ -1,10 +1,8 @@
-from math import sqrt
 import time
 from random import gauss, randint, random, randrange, uniform
 from typing import Optional, TYPE_CHECKING, TypedDict
 
 from pygame import Color, Vector2, draw
-from pygame.font import SysFont
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 from pygame.surface import Surface
@@ -13,7 +11,6 @@ from src.gradients import draw_circle_gradient
 
 from . import config
 from .neural import NeuralNetwork
-from .utils import sign
 
 if TYPE_CHECKING:
     from context_manager import ContextManager
@@ -119,7 +116,6 @@ class Creature(Sprite):
         self.energy = config.CREATURE_STARTING_ENERGY
         self.digesting = config.CREATURE_MIN_STARTING_DIGESTING_POINTS + self.size
         self.color = self.calcul_color()
-        self.font = SysFont("Arial", 12)
         self.surf = Surface((self.size, self.size))
         self.surf.fill(self.color)
         self.rectangle = self.surf.get_rect(
@@ -142,73 +138,12 @@ class Creature(Sprite):
         neurons_count = min(255, 255 * self.network.neurons_count / (config.CREATURES_MAX_CONNECTIONS + 5))
         third = 255
         return Color(f'#{int(life):02X}{int(neurons_count):02X}{third:02X}')
-
-    def move(self, context: "ContextManager", delta_t: int):
-        "delta_t is time since last move in milliseconds"
+    
+    def update_network(self, context: "ContextManager"):
         self.network.update_input(self, context)
         self.network.tick()
         self.network.act(self)
 
-        # calculate friction to apply to acceleration
-        fr_max = Vector2(
-            config.FRICTION * sqrt(self.size) * sign(self.own_acceleration.x),
-            config.FRICTION * sqrt(self.size) * sign(self.own_acceleration.y)
-        )
-        if abs(fr_max.x) > abs(self.own_acceleration.x):
-            fr_max.x = self.own_acceleration.x * 0.95
-        if abs(fr_max.y) > abs(self.own_acceleration.y):
-            fr_max.y = self.own_acceleration.y * 0.95
-
-        self.acc = (self.own_acceleration - fr_max) / self.size
-
-        # apply max acceleration control
-        if abs(self.acc.x) > config.MAX_CREATURE_ACC:
-            self.acc.x = config.MAX_CREATURE_ACC * sign(self.acc.x)
-        if abs(self.acc.y) > config.MAX_CREATURE_ACC:
-            self.acc.y = config.MAX_CREATURE_ACC * sign(self.acc.y)
-
-        self.vel += self.acc / 100 * delta_t
-        # apply deceleration
-        self.deceleration = Vector2(
-            config.CREATURE_DECELERATION * sign(self.vel.x),
-            config.CREATURE_DECELERATION * sign(self.vel.y)
-        )
-        if abs(self.deceleration.x) > abs(self.vel.x):
-            self.deceleration.x = self.vel.x * 0.95
-        if abs(self.deceleration.y) > abs(self.vel.y):
-            self.deceleration.y = self.vel.y * 0.95
-        self.vel -= self.deceleration
-        
-        # apply max speed control
-        if abs(self.vel.x) > config.MAX_CREATURE_VEL:
-            self.vel.x = config.MAX_CREATURE_VEL * sign(self.vel.x)
-        if abs(self.vel.y) > config.MAX_CREATURE_VEL:
-            self.vel.y = config.MAX_CREATURE_VEL * sign(self.vel.y)
-
-        new_pos = self.pos + 0.5 * (self.vel) * delta_t
-
-        distance = new_pos.distance_to(self.pos)
-        if distance > 1e-5:
-            self.energy -= distance * pow(self.size, 1.2) / 60
-        else: # if creature is immobile, make it hungry
-            self.energy -= config.CREATURE_STILL_ENERGY * delta_t/1000
-        
-        # remove energy due to light emission
-        light_points = self.light_emission * delta_t / 1000
-        if light_points > 0:
-            self.energy -= light_points / 700
-
-        if new_pos.x > config.WIDTH:
-            new_pos.x = 0
-        elif new_pos.x < 0:
-            new_pos.x = config.WIDTH
-        if new_pos.y > config.HEIGHT:
-            new_pos.y = 0
-        elif new_pos.y < 0:
-            new_pos.y = config.HEIGHT
-
-        self.pos = new_pos
-        self.rectangle.center = (int(self.pos.x), int(self.pos.y))
 
     def update_energy(self):
         "Update the creature energy, life and digestion"
@@ -284,16 +219,9 @@ class Creature(Sprite):
             # print(self.creature_id, self.light_emission)
             draw_circle_gradient(surface, self.rectangle.center, self.light_emission, Color(255, 230, 100, min(255, self.light_emission)))
 
-    def draw(self, surface: Surface, *, debug: bool=False, is_selected: bool=False):
+    def draw(self, surface: Surface, is_selected: bool=False):
         "Draw the sprite"
         surface.blit(self.surf, self.rectangle)
-        if debug:
-            acc_t = self.font.render(
-                f"acc: ({self.acc.x*1000:.1f}, {self.acc.y*1000:.1f})", True, "white")
-            surface.blit(acc_t, self.pos - Vector2(20, 32))
-            vel_t = self.font.render(
-                f"vel: ({self.vel.x*1000:.1f}, {self.vel.y*1000:.1f})", True, "white")
-            surface.blit(vel_t, self.pos - Vector2(20, 22))
         if is_selected:
             self.draw_selection_frame(surface)
             self.draw_vision_circle(surface)

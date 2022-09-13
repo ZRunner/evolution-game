@@ -52,4 +52,4 @@ CREATURE_MAX_LIGHT_DISTANCE_EMISSION = 200
 CREATURE_MIN_REPRODUCTION_STATE = 0.2
 
 # Minimum time in seconds between two reproductions from the same creature
-CREATURE_REPRO_COOLDOWN = 7
+CREATURE_REPRO_COOLDOWN = 15
