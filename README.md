@@ -16,15 +16,15 @@ I plan to add more and more interactions (both input and output neurons) in the 
 
 ## Shortcuts
 
-* `G`: open cool charts in the bottom left
-* `left arrow` and `right arrow`: navigate between charts
-* `P`: put the game on pause (or resume)
-* `right click` on a creature to open its details panel
+* `G` open cool charts in the bottom left
+* `left arrow` and `right arrow` navigate between charts
+* `P` put the game on pause (or resume)
+* `left click` on a creature to open its details panel
 
 
 ## How to profile
 
-First, install the required dependencies from `requirements.txt`
+First, install the required dependencies from `requirements-dev.txt`
 
 Then use `py-spy top --subprocesses -- python3 start.py` if you want to get the live view of what functions are taking the most time,
 or `py-spy record -o profile.svg --subprocesses -- python start.py` for a nice image at the end.
