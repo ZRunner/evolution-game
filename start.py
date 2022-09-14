@@ -43,6 +43,10 @@ def main():
     charts = ChartsManager(window_surface)
     panels = PanelsManager(window_surface)
 
+    # generate food
+    for _ in range(config.INITIAL_FOOD_QUANTITY):
+        context.generate_food()
+
     # launch events
     for event_type, frequency in events.items():
         pygame.time.set_timer(event_type, frequency)
