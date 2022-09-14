@@ -22,13 +22,13 @@ class ContextManager:
     
     def update_creatures_energies(self):
         "Update creatures energies and life, and remove killed ones"
-        to_die: list[Creature] = []
+        to_die: list[int] = []
         for entity in self.creatures.values():
             entity.update_energy()
             if entity.life <= 0:
-                to_die.append(entity)
-        for entity in to_die:
-            del self.creatures[entity]
+                to_die.append(entity.creature_id)
+        for entity_id in to_die:
+            del self.creatures[entity_id]
     
     def generate_food(self):
         "Generate food points around food generators"

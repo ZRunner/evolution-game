@@ -28,6 +28,7 @@ class CreatureProcessMove:
         self._update_acceleration(delta_t)
         self._update_velocity(delta_t)
         new_pos = self.pos + 0.5 * (self.vel) * delta_t
+        self._update_energy(new_pos, delta_t)
         self._update_position(new_pos)
     
     def _update_acceleration(self, delta_t: int):
