@@ -123,6 +123,7 @@ class Creature(Sprite):
             center=(randrange(config.WIDTH), randrange(config.HEIGHT)))
         self.damager = DamageDisplayer(self.size)
         self.last_reproduction = round(time.time())
+        self.birth = round(time.time())
         # some vectors
         self.pos = Vector2(self.rectangle.center)
         self.vel = Vector2(0, 0)

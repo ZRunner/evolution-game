@@ -1,4 +1,6 @@
+import math
 from random import random
+import time
 from typing import Optional
 from .abc import InputNeuron, sigmoid
 
@@ -65,9 +67,16 @@ class FoodDistanceInputNeuron(InputNeuron):
 class ConstantNeuron(InputNeuron):
     "Corresponds to a fixed value"
     fixed_value: Optional[float] = None
-    name = f"Constant"
+    name = "Constant"
 
     def update(self, subject, context):
         if self.fixed_value is None:
             self.fixed_value = round(random() * 2 - 1, 3)
             self.value = self.fixed_value
+
+class SinusoidNeuron(InputNeuron):
+    "Corresponds to a value based on the time, following a sinusoid"
+    name = "Sinusoid"
+
+    def update(self, subject, context):
+        self.value = math.sin((subject.birth - time.time()) * 0.05)

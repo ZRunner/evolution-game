@@ -26,6 +26,7 @@ INPUT_NEURONS = [
     inputs.ConstantNeuron(),
     inputs.ConstantNeuron(),
     inputs.ConstantNeuron(),
+    inputs.SinusoidNeuron(),
 ]
 ACTION_NEURONS = [
     actions.MoveXActionNeuron(),
@@ -118,6 +119,10 @@ class NeuralNetworkGenerationAgent:
                 raise err
             if len(preds) == 0:
                 to_remove.add(neuron)
+        # Rename constant neurons
+        for i, neuron in enumerate(self.input_neurons):
+            if isinstance(neuron, inputs.ConstantNeuron):
+                neuron.name = f"C{i}"
 
         for neuron in to_remove:
             self.remove_neuron(neuron)
