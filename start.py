@@ -52,7 +52,7 @@ def main():
     for event_type, frequency in events.items():
         pygame.time.set_timer(event_type, frequency)
 
-    with Pool() as pool:
+    with Pool(config.PROCESSES_COUNT) as pool:
         while is_running:
             for event in pygame.event.get():
                 # name = pygame.event.event_name(event.type)

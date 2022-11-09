@@ -1,6 +1,12 @@
 # Window dimensions
+from typing import Optional
+
+
 HEIGHT: int = 800
 WIDTH: int = 1200
+
+# Number of parallel processes to use, None to get 1 per CPU
+PROCESSES_COUNT: Optional[int] = None
 
 # Max frames per second
 FPS: int = 60
