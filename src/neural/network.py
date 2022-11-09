@@ -27,6 +27,7 @@ INPUT_NEURONS = [
     inputs.ConstantNeuron(),
     inputs.ConstantNeuron(),
     inputs.SinusoidNeuron(),
+    inputs.AgeNeuron(),
 ]
 ACTION_NEURONS = [
     actions.MoveXActionNeuron(),

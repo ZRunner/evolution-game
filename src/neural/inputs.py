@@ -79,4 +79,11 @@ class SinusoidNeuron(InputNeuron):
     name = "Sinusoid"
 
     def update(self, subject, context):
-        self.value = math.sin((subject.birth - time.time()) * 0.05)
+        self.value = math.sin((subject.birth - context.time) * 0.05)
+
+class AgeNeuron(InputNeuron):
+    "Corresponds to the creature's age in seconds"
+    name = "Age"
+
+    def update(self, subject, context):
+        self.value = sigmoid((context.time - subject.birth) * 0.01)

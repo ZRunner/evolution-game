@@ -13,4 +13,14 @@ def display_fps(window: Surface, font: Font, clock: Clock):
     else:
         color = "WHITE"
     fps_t = font.render(str(fps), True, Color(color))
-    window.blit(fps_t,(0,0))
+    window.blit(fps_t,(3, 0))
+
+def display_elapsed_time(window: Surface, font: Font, elapsed: float):
+    "Display the elapsed time on top left corner"
+    if minutes := elapsed // 60:
+        seconds = elapsed % 60
+        text = f"{int(minutes)}m {seconds:.0f}s"
+    else:
+        text = f"{elapsed:.1f}s"
+    time_t = font.render(text, True, Color("WHITE"))
+    window.blit(time_t,(3, 15))

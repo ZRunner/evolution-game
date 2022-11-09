@@ -44,7 +44,7 @@ class DamageDisplayer:
         surface.blit(self.surface, rectangle)
 
 
-def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id: int) -> "Creature":
+def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id: int, timestamp: float) -> "Creature":
     "Use some random algorithms to merge two creatures into a new 'child'"
     size = randint(min(parent1.size, parent2.size), max(parent1.size, parent2.size))
     max_life = randint(min(parent1.max_life, parent2.max_life), max(parent1.max_life, parent2.max_life))
@@ -56,6 +56,7 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
     return Creature(
         creature_id,
         generation,
+        timestamp,
         {
             "size": size,
             "network": NeuralNetwork.from_parents(parent1.network, parent2.network),
@@ -80,7 +81,7 @@ class CreatureGeneratedAttributes(TypedDict):
 class Creature(Sprite):
     "A simple creature"
 
-    def __init__(self, creature_id: int, generation: int, kwargs: Optional[CreatureGeneratedAttributes] = None):
+    def __init__(self, creature_id: int, generation: int, timestamp: float, kwargs: Optional[CreatureGeneratedAttributes] = None):
         super().__init__()
         self.creature_id = creature_id
         self.generation = generation
@@ -123,7 +124,7 @@ class Creature(Sprite):
             center=(randrange(config.WIDTH), randrange(config.HEIGHT)))
         self.damager = DamageDisplayer(self.size)
         self.last_reproduction = round(time.time())
-        self.birth = round(time.time())
+        self.birth = timestamp
         # some vectors
         self.pos = Vector2(self.rectangle.center)
         self.vel = Vector2(0, 0)

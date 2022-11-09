@@ -10,7 +10,7 @@ from src.context_manager import ContextManager
 from src.creature import Creature
 from src.creatures_panel import PanelsManager
 from src.game_events import GENERATE_FOOD, UPDATE_CREATURES_ENERGIES, events
-from src.interface import display_fps
+from src.interface import display_elapsed_time, display_fps
 
 pygame.init()
 
@@ -91,6 +91,7 @@ def main():
 
             if not is_pause:
                 context.move_creatures(pool, delta_t)
+                context.time += delta_t / 1000
 
             for entity in context.creatures.values():
                 if not is_pause:
@@ -105,12 +106,13 @@ def main():
                 food_point.draw(window_surface)
 
             display_fps(window_surface, font, clock)
+            display_elapsed_time(window_surface, font, context.time)
 
             if selected_creature_id is not None:
                 if creature := next(
                     (c for c in context.creatures.values() if c.creature_id == selected_creature_id),
                         None):
-                    panels.draw_creature_panel(creature)
+                    panels.draw_creature_panel(creature, context)
                 else:
                     selected_creature_id = None
 
@@ -119,7 +121,7 @@ def main():
 
             if not is_pause:
                 # save datas for charts
-                charts.store_datas(clock, list(context.creatures.values()), context.foods)
+                charts.store_datas(clock, context)
                 # make children or smth
                 context.reproduce_creatures()
 

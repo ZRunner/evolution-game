@@ -11,7 +11,7 @@ from .mp_utils import CreatureProcessMove, mp_execute_move
 class ContextManager:
 
     def __init__(self):
-        self.creatures: dict[int, Creature] = {i: Creature(i, 0) for i in range(config.CREATURES_COUNT)}
+        self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.CREATURES_COUNT)}
         self.highest_creature_id = config.CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
             FoodGenerator(None, 160, 0.7),
@@ -19,6 +19,7 @@ class ContextManager:
             FoodGenerator(None, 40, 0.3),
         ]
         self.foods: list[FoodPoint] = []
+        self.time = 0.0
     
     def update_creatures_energies(self):
         "Update creatures energies and life, and remove killed ones"
@@ -72,7 +73,7 @@ class ContextManager:
                     break
                 if creature1.can_repro and creature2.can_repro and creature1.rectangle.colliderect(creature2.rectangle):
                     # create the child
-                    child = creature_reproduction(creature1, creature2, self.highest_creature_id)
+                    child = creature_reproduction(creature1, creature2, self.highest_creature_id, self.time)
                     # make it spawn between its parents
                     child.pos.x = (creature1.pos.x + creature2.pos.x) / 2
                     child.pos.y = (creature1.pos.y + creature2.pos.y) / 2

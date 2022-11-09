@@ -1,12 +1,15 @@
 # from grapy import Graph
 
 import time
+
 from pygame import Color, Vector2
 from pygame.font import SysFont
 from pygame.surface import Surface
 
 from . import config
+from .context_manager import ContextManager
 from .creature import Creature
+
 
 class PanelsManager:
     "Display contextual info on the right side of the window"
@@ -22,7 +25,7 @@ class PanelsManager:
         self.surf.set_alpha(80)
         self.rect = self.surf.get_rect(center=(win_x - self.surf.get_size()[0]/2, win_y/2))
 
-    def draw_creature_panel(self, creature: Creature):
+    def draw_creature_panel(self, creature: Creature, context: ContextManager):
         "Draw info about a given creature"
         self.surface.blit(self.surf, self.rect)
         # icon
@@ -43,6 +46,7 @@ class PanelsManager:
         texts = [
             f"Generation {creature.generation}",
             f"Size: {creature.size}",
+            f"Age: {context.time - creature.birth:.0f}s",
             f"Position: ({creature.pos.x:.0f}, {creature.pos.y:.0f})",
             f"Speed: {creature.vel.length()*1000:.1f}p/s",
             f"Acceleration: {creature.acc.length()*1000:.1f}p/s²",

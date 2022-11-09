@@ -1,5 +1,5 @@
 import time
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 import matplotlib
 import matplotlib.backends.backend_agg as agg
@@ -12,10 +12,9 @@ from pygame.font import SysFont
 from pygame.surface import Surface
 from pygame.time import Clock
 
+from .context_manager import ContextManager
+
 from . import config
-if TYPE_CHECKING:
-    from creature import Creature
-    from food import FoodPoint
 
 matplotlib.use("Agg")
 
@@ -54,9 +53,9 @@ class ChartData:
         self.timestamps.clear()
         self.data.clear()
 
-    def append_value(self, value: float):
+    def append_value(self, timestamp: float, value: float):
         "Append a value to the records"
-        self.timestamps.append(time.time())
+        self.timestamps.append(timestamp)
         self.data.append(value)
 
     def get_axis(self, window: int = 20):
@@ -143,36 +142,38 @@ class ChartsManager:
         "Decrement the graph index"
         self.index = (self.index - 1) % len(self.datas)
 
-    def store_datas(self, clock: Clock, creatures: list["Creature"], foods: list["FoodPoint"]):
+    def store_datas(self, clock: Clock, context: ContextManager):
         "Store useful datas inside ChartData objects"
+        ts = context.time
+        creatures = list(context.creatures.values())
         # FPS
-        self.datas["fps"].append_value(clock.get_fps())
+        self.datas["fps"].append_value(ts, clock.get_fps())
         # Creatures Velocity
         if len(creatures) > 0:
             vel = [creature.vel.length() for creature in creatures]
-            self.datas["avg_vel"].append_value(sum(vel)/len(vel))
+            self.datas["avg_vel"].append_value(ts, sum(vel)/len(vel))
             # Creatures Acceleration
             acc = [creature.acc.length() for creature in creatures]
-            self.datas["avg_acc"].append_value(sum(acc)/len(acc))
+            self.datas["avg_acc"].append_value(ts, sum(acc)/len(acc))
             # Creatures Count
-            self.datas["creatures_count"].append_value(len(creatures))
+            self.datas["creatures_count"].append_value(ts, len(creatures))
             # Creatures Sizes
             sizes = [creature.size for creature in creatures]
-            self.datas["avg_size"].append_value(sum(sizes)/len(sizes))
+            self.datas["avg_size"].append_value(ts, sum(sizes)/len(sizes))
             # Avegare Energy
             energies = [max(0, creature.energy) for creature in creatures]
-            self.datas["avg_energy"].append_value(sum(energies)/len(energies))
+            self.datas["avg_energy"].append_value(ts, sum(energies)/len(energies))
             # Average Life percentage
             lifes = [creature.life / creature.max_life for creature in creatures]
-            self.datas["avg_life"].append_value(sum(lifes)/len(lifes))
+            self.datas["avg_life"].append_value(ts, sum(lifes)/len(lifes))
             # Total Food Value
-            food = sum(point.quantity for point in foods)
-            self.datas["foods_total"].append_value(food)
+            food = sum(point.quantity for point in context.foods)
+            self.datas["foods_total"].append_value(ts, food)
             # Average light emitted
             lights_e = [creature.light_emission for creature in creatures]
-            self.datas["avg_light"].append_value(sum(lights_e)/len(lights_e))
+            self.datas["avg_light"].append_value(ts, sum(lights_e)/len(lights_e))
             # Average creature generation
             generations = [creature.generation for creature in creatures]
-            self.datas["generations"].append_value(sum(generations)/len(generations))
+            self.datas["generations"].append_value(ts, sum(generations)/len(generations))
         elif self.datas["creatures_count"].data[-2] > 0:
-            self.datas["creatures_count"].append_value(len(creatures))
+            self.datas["creatures_count"].append_value(ts, len(creatures))
