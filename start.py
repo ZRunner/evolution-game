@@ -1,5 +1,6 @@
 from multiprocessing import Pool
 from typing import Optional
+from collections.abc import Iterable
 
 import pygame
 
@@ -13,7 +14,7 @@ from src.interface import display_fps
 
 pygame.init()
 
-def detect_selection(click: pygame.Vector2, creatures: list[Creature]):
+def detect_selection(click: pygame.Vector2, creatures: Iterable[Creature]):
     "Delect on which creature the user clicked"
     potentials: list[tuple[float, int]] = []
     for creature in creatures:
@@ -118,7 +119,7 @@ def main():
 
             if not is_pause:
                 # save datas for charts
-                charts.store_datas(clock, context.creatures.values(), context.foods)
+                charts.store_datas(clock, list(context.creatures.values()), context.foods)
                 # make children or smth
                 context.reproduce_creatures()
 

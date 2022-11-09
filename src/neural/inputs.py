@@ -64,7 +64,7 @@ class FoodDistanceInputNeuron(InputNeuron):
 
 class ConstantNeuron(InputNeuron):
     "Corresponds to a fixed value"
-    fixed_value: Optional[int] = None
+    fixed_value: Optional[float] = None
     name = f"Constant"
 
     def update(self, subject, context):

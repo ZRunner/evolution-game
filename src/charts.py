@@ -95,9 +95,9 @@ class ChartsManager:
             figsize=(6, 3),  # Inches
             dpi=70,          # 100 dots per inch, so the resulting buffer is 400x400 pixels
         )
-        self.fig.patch.set_alpha(0.7)
+        self.fig.patch.set_alpha(0.7)  # type: ignore
         self.ax: plt.Axes = self.fig.gca()
-        self.ax.patch.set_alpha(0)
+        self.ax.patch.set_alpha(0)  # type: ignore
     
         self.lines: list[Line2D] = self.ax.plot(np.empty(10), np.empty(10), lw=2)
 

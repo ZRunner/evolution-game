@@ -1,8 +1,9 @@
 import time
 from random import gauss, randint, random, randrange, uniform
-from typing import Optional, TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Optional, TypedDict
 
-from pygame import Color, Vector2, draw
+from pygame import Color, draw
+from pygame.math import Vector2
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 from pygame.surface import Surface
@@ -217,7 +218,12 @@ class Creature(Sprite):
         "Draw a circle representing the emitted light"
         if self.light_emission > 0:
             # print(self.creature_id, self.light_emission)
-            draw_circle_gradient(surface, self.rectangle.center, self.light_emission, Color(255, 230, 100, min(255, self.light_emission)))
+            draw_circle_gradient(
+                surface,
+                Vector2(self.rectangle.center),
+                round(self.light_emission),
+                Color(255, 230, 100, min(255, int(self.light_emission)))
+                )
 
     def draw(self, surface: Surface, is_selected: bool=False):
         "Draw the sprite"

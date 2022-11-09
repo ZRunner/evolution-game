@@ -39,7 +39,7 @@ AnyNeuron = Union[InputNeuron, TransitionNeuron]
 
 class NeuralNetworkGenerationAgent:
     "Manage generating new neural networks"
-    
+
     @classmethod
     def merge(cls, parent1: "NeuralNetwork", parent2: "NeuralNetwork"):
         "Create a new neural network from 2 given parents"

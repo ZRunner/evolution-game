@@ -84,11 +84,11 @@ class ContextManager:
                     creature1.last_reproduction = round(time.time())
                     creature2.last_reproduction = round(time.time())
         # add every new child into the Great List of Creatures
-        children = list(children)[:10]
-        for child in children:
+        children_list = list(children)[:10]
+        for child in children_list:
             self.creatures[child.creature_id] = child
-        if len(children):
-            print(len(children), "new creatures born")
+        if len(children_list):
+            print(len(children_list), "new creatures born")
     
     def move_creatures(self, pool: Pool, delta_t: int):
         arguments: list[tuple[CreatureProcessMove, int]] = []

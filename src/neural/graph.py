@@ -21,7 +21,7 @@ class NeuralNetworkGraph:
         self.canvas_size: tuple[int, int]
         self.raw_data: Optional[memoryview] = None
         self.pos: Optional[dict] = None
-        self.viewLim: tuple[tuple[int, int], tuple[int, int]] = None
+        self.viewLim: Optional[tuple[tuple[float, float], tuple[float, float]]] = None
         self.neurons_map: dict[str, AnyNeuron] = {}
 
     def add_neuron(self, neuron: AnyNeuron):
@@ -105,6 +105,8 @@ class NeuralNetworkGraph:
 
     def detect_tooltip(self, surface: Surface):
         "Draw tooltips over the graph is mouse is over a neuron"
+        if self.viewLim is None or self.pos is None:
+            return
         # mouse position
         mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
         # width of the plot

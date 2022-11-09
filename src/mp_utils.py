@@ -1,7 +1,7 @@
 from math import sqrt
 from typing import TYPE_CHECKING
 
-from pygame import Vector2
+from pygame.math import Vector2
 
 from . import config
 from .utils import sign
