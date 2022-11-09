@@ -35,7 +35,7 @@ class NeuralNetworkGraph:
         self.neurons_map[neuron.name] = neuron
         self.pos = None
 
-    def add_wire(self, origin: AnyNeuron, direction: TransitionNeuron, weight: float = 1.0):
+    def add_wire(self, origin: AnyNeuron, direction: TransitionNeuron, weight: float):
         "Add a connection between two neurons"
         self.graph.add_edge(origin.name, direction.name, weight=weight)
         self.pos = None
@@ -72,13 +72,24 @@ class NeuralNetworkGraph:
         )
         ax: plt.Axes = fig.gca()  # pylint: disable=invalid-name
         canvas = agg.FigureCanvasAgg(fig)
+        edges: list[dict[str, float]] = list(self.graph.edges().values())  # type: ignore
         nx.draw(
             self.graph,
             pos=self.pos,
             with_labels=True,
             ax=ax,
-            node_color=[node.get("color", "gray")
-                        for node in self.graph.nodes.values()],
+            node_color=[
+                node.get("color", "gray")
+                for node in self.graph.nodes.values()
+            ],
+            edge_color=[
+                "red" if edge["weight"] < 0 else "blue"
+                for edge in edges
+            ],
+            width=[
+                abs(edge["weight"] * 1.9) + 0.1
+                for edge in edges
+            ],
             font_size=8,
             # font_color="white",
         )

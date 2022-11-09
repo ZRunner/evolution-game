@@ -47,13 +47,17 @@ class NeuralNetworkGenerationAgent:
         new_network.connections_number = randint(min(len(parent1.wires), len(parent2.wires)), max(len(parent1.wires), len(parent2.wires)))
 
         new_network.graph = NeuralNetworkGraph()
-        new_network.wires: list[tuple[AnyNeuron, float, TransitionNeuron]] = []
+        new_network.wires.clear()
         wires_pool = parent1.wires + parent2.wires
 
         # make sure to keep only one version of each neuron by name
         neurons_pool = [n for wire in wires_pool for n in wire if isinstance(n, AnyNeuron)]
         for neuron in neurons_pool:
-            wires_pool = [[n if isinstance(n, float) or n.name != neuron.name else neuron for n in wire] for wire in wires_pool]
+            wires_pool: list[tuple[AnyNeuron, float, TransitionNeuron]] = [
+                [n if isinstance(n, float) or n.name !=
+                 neuron.name else neuron for n in wire]
+                for wire in wires_pool
+            ]  # type: ignore
 
         while len(new_network.wires) < new_network.connections_number:
             while len(new_network.wires) < new_network.connections_number or len(new_network.input_neurons) == 0 or len(new_network.output_neurons) == 0:
@@ -142,7 +146,7 @@ class NeuralNetworkGenerationAgent:
             return
         self.graph.add_neuron(origin)
         self.graph.add_neuron(direction)
-        self.graph.add_wire(origin, direction)
+        self.graph.add_wire(origin, direction, weight)
         self.wires.append((origin, weight, direction))
 
     def remove_neuron(self, neuron: AnyNeuron):
@@ -181,13 +185,13 @@ class NeuralNetwork:
         "Merge two neural networks to create a new one"
         new_element = cls(0, 0)
         new_element.graph = NeuralNetworkGraph()
-        new_element.wires: list[tuple[AnyNeuron, float, TransitionNeuron]] = []
+        new_element.wires = []
 
         wires = NeuralNetworkGenerationAgent.merge(parent1, parent2)
         for wire in wires:
             new_element.add_wire(*wire)
 
-        new_element.last_updated: set[AnyNeuron] = set(new_element.input_neurons)
+        new_element.last_updated = set(new_element.input_neurons)
         return new_element
         
 
@@ -206,7 +210,7 @@ class NeuralNetwork:
         "Add a connection between two neurons"
         self.graph.add_neuron(origin)
         self.graph.add_neuron(direction)
-        self.graph.add_wire(origin, direction)
+        self.graph.add_wire(origin, direction, weight)
         self.wires.append((origin, weight, direction))
 
     @property
