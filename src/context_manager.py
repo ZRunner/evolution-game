@@ -14,7 +14,7 @@ class ContextManager:
         self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.CREATURES_COUNT)}
         self.highest_creature_id = config.CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
-            FoodGenerator(None, 160, 0.7),
+            FoodGenerator(None, 160, 0.75),
             FoodGenerator(None, 80, 0.4),
             FoodGenerator(None, 40, 0.3),
         ]

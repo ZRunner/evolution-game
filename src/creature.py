@@ -102,7 +102,7 @@ class Creature(Sprite):
                 randint(config.CREATURES_MIN_CONNECTIONS, config.CREATURES_MAX_CONNECTIONS),
                 randrange(config.CREATURES_MAX_HIDDEN_NEURONS)
             )
-            self.max_life = 10 + randrange(self.size * 10)
+            self.max_life = 8 + randrange(self.size * 10)
             self.life_regen_cost = round(self.size * randint(1, 5)) + 1
             self.digestion_efficiency = round(random() * 1.8 + 0.2, 2)
             self.digestion_speed = round(random() * 4 + 0.8, 1)
