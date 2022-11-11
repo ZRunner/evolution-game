@@ -14,6 +14,12 @@ I mean, technically speaking, it's all squares having a very few brain cells to 
 I plan to add more and more interactions (both input and output neurons) in the simulation, but for now they can already do some very neat things. They're just too dumb for my great expectations I guess.
 
 
+## Requirements
+
+* Python 3.10 or more
+* Libraries listed in `requirements.txt`
+* A computer
+
 ## Shortcuts
 
 * `G` open cool charts in the bottom left
