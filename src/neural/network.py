@@ -191,7 +191,7 @@ class NeuralNetwork:
         "Merge two neural networks to create a new one"
         new_element = cls(0, 0)
         new_element.graph = NeuralNetworkGraph()
-        new_element.wires = []
+        new_element.wires.clear()
 
         wires = NeuralNetworkGenerationAgent.merge(parent1, parent2)
         for wire in wires:

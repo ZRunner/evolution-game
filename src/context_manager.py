@@ -30,6 +30,8 @@ class ContextManager:
                 to_die.append(entity.creature_id)
         for entity_id in to_die:
             del self.creatures[entity_id]
+        if to_die:
+            print(len(to_die), "creature(s) died")
     
     def generate_food(self):
         "Generate food points around food generators"
@@ -73,7 +75,7 @@ class ContextManager:
                     break
                 if creature1.can_repro and creature2.can_repro and creature1.rectangle.colliderect(creature2.rectangle):
                     # create the child
-                    child = creature_reproduction(creature1, creature2, self.highest_creature_id, self.time)
+                    child = creature_reproduction(creature1, creature2, self.highest_creature_id + 1, self.time)
                     # make it spawn between its parents
                     child.pos.x = (creature1.pos.x + creature2.pos.x) / 2
                     child.pos.y = (creature1.pos.y + creature2.pos.y) / 2
@@ -97,4 +99,4 @@ class ContextManager:
             creature.update_network(self)
             arguments.append((CreatureProcessMove(creature), delta_t))
         for i in pool.imap_unordered(mp_execute_move, arguments, chunksize=40):
-            self.creatures[i.creature_id] = i.apply_to_creature(self.creatures[i.creature_id])
+            i.apply_to_creature(self.creatures[i.creature_id])
