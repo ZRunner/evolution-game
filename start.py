@@ -1,5 +1,7 @@
 # check python version
 import sys
+
+from src.neural.graph import AnyNeuron
 py_version = sys.version_info
 if py_version.major != 3 or py_version.minor < 10:
     print("You must use at least Python 3.10!", file=sys.stderr)
@@ -8,6 +10,8 @@ if py_version.major != 3 or py_version.minor < 10:
 from multiprocessing import Pool
 from typing import Optional
 from collections.abc import Iterable
+
+import gc
 
 import pygame
 
@@ -18,6 +22,12 @@ from src.creature import Creature
 from src.creatures_panel import PanelsManager
 from src.game_events import GENERATE_FOOD, UPDATE_CREATURES_ENERGIES, events
 from src.interface import display_elapsed_time, display_fps
+
+if config.MEMORY_DEBUG:
+    from collections import defaultdict
+    before = defaultdict(int)
+    after = defaultdict(int)
+    before_ids = set()
 
 pygame.init()
 
@@ -58,9 +68,24 @@ def main():
     # launch events
     for event_type, frequency in events.items():
         pygame.time.set_timer(event_type, frequency)
+    
+    if config.MEMORY_DEBUG:
+        counter  = 0
+        for i in gc.get_objects():
+            before[type(i)] += 1
 
     with Pool(config.PROCESSES_COUNT) as pool:
         while is_running:
+            if config.MEMORY_DEBUG:
+                counter += 1 # type: ignore
+                # if counter > 3000:
+                #     print(counter)
+                #     break
+                if counter == 600:
+                    for i in gc.get_objects():
+                        if type(i) in before:
+                            before[type(i)] -= 1
+                        before_ids.add(id(i))
             for event in pygame.event.get():
                 # name = pygame.event.event_name(event.type)
                 # if "Window" not in name and "MouseMotion" not in name:
@@ -85,7 +110,15 @@ def main():
                     click = pygame.Vector2(event.pos)
                     selected_creature_id = detect_selection(click, context.creatures.values())
                 if event.type == UPDATE_CREATURES_ENERGIES and not is_pause:
+                    # count_before = len([0 for i in get_objects() if isinstance(i, nx.DiGraph)])
                     context.update_creatures_energies()
+                    # count_after = len([0 for i in get_objects() if isinstance(i, nx.DiGraph)])
+                    # should_have_died = [i for i in get_objects() if isinstance(i, Creature) and i.life <= 0]
+                    # for c in should_have_died:
+                    #     refs =  gc.get_referrers(c)
+                    #     print("SHOULD HAVE DIED", c, refs)
+                    #     del refs
+                    # print("before", count_before, "after", count_after)
                 if event.type == GENERATE_FOOD and not is_pause:
                     context.generate_food()
 
@@ -133,7 +166,23 @@ def main():
                 context.reproduce_creatures()
 
             pygame.display.update()
-            delta_t = clock.tick(config.FPS)
+            delta_t = round(clock.tick(config.FPS) * config.GAME_SPEED)
 
 if __name__ == '__main__':
     main()
+    if config.MEMORY_DEBUG:
+        filtered = []
+        after_objs = gc.get_objects()
+        for i in after_objs:
+            after[type(i)] += 1 # type: ignore
+            if id(i) not in before_ids:
+                if type(i) in {tuple, dict, list, AnyNeuron} and "homebrew" not in str(i):
+                    filtered.append((i, type(i)))
+        del before_ids, after_objs
+        diff = sorted(
+            ((k, after[k] - before[k]) # type: ignore
+            for k in after # type: ignore
+            if abs(after[k] - before[k]) > 10 # type: ignore
+        ), key=lambda x: x[1], reverse=True)
+        print("\n".join(str(x) for x in diff))
+        print("end")

@@ -11,6 +11,12 @@ PROCESSES_COUNT: Optional[int] = None
 # Max frames per second
 FPS: int = 60
 
+# Game speed (1 = real time, 2 = 2x faster, etc.)
+GAME_SPEED: float = 100.0
+
+# RAM debug mode
+MEMORY_DEBUG: bool = False
+
 # Friction coefficient used in acceleration calculs
 FRICTION: float = 0.2
 
