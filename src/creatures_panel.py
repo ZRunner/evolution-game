@@ -1,7 +1,3 @@
-# from grapy import Graph
-
-import time
-
 from pygame import Color, Vector2
 from pygame.font import SysFont
 from pygame.surface import Surface
@@ -39,8 +35,8 @@ class PanelsManager:
         text = self.title_font.render(f"Creature #{creature.creature_id}", True, "white")
         self.surface.blit(text, Vector2(self.rect.topleft) + Vector2(100, 25))
         # reproduction state
-        repr_label = "Yes" if creature.can_repro else (
-            "No (cooldown)" if creature.last_reproduction + config.CREATURE_REPRO_COOLDOWN > round(time.time()) else "No (disabled neuron)"
+        repr_label = "Yes" if creature.can_repro(context.time) else (
+            "No (cooldown)" if creature.last_reproduction + config.CREATURE_REPRO_COOLDOWN > context.time else "No (disabled neuron)"
             )
         # Info
         texts = [

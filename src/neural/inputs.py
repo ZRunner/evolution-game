@@ -1,6 +1,5 @@
 import math
 from random import random
-import time
 from typing import Optional
 from .abc import InputNeuron, sigmoid
 

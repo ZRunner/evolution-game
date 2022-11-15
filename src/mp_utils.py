@@ -72,7 +72,7 @@ class CreatureProcessMove:
     def _update_energy(self, new_pos: Vector2, delta_t: int):
         distance = new_pos.distance_to(self.pos)
         if distance > 1e-5:
-            self.energy -= distance * pow(self.size, 1.2) / 60
+            self.energy -= distance * pow(self.size, 1.2) / (3.2 * delta_t)
         else: # if creature is immobile, make it hungry
             self.energy -= config.CREATURE_STILL_ENERGY * delta_t/1000
         

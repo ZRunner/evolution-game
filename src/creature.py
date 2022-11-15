@@ -123,7 +123,7 @@ class Creature(Sprite):
         self.rectangle = self.surf.get_rect(
             center=(randrange(config.WIDTH), randrange(config.HEIGHT)))
         self.damager = DamageDisplayer(self.size)
-        self.last_reproduction = round(time.time())
+        self.last_reproduction = timestamp
         self.birth = timestamp
         # some vectors
         self.pos = Vector2(self.rectangle.center)
@@ -131,9 +131,8 @@ class Creature(Sprite):
         self.acc = Vector2(0, 0)
         self.deceleration = Vector2(0, 0)
 
-    @property
-    def can_repro(self):
-        return self.ready_for_reproduction and time.time() - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
+    def can_repro(self, timestamp: float):
+        return self.ready_for_reproduction and timestamp - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
 
     def calcul_color(self) -> Color:
         "Calcul the creature color based on its specs"

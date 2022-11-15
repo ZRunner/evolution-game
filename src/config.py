@@ -12,7 +12,7 @@ PROCESSES_COUNT: Optional[int] = None
 FPS: int = 60
 
 # Game speed (1 = real time, 2 = 2x faster, etc.)
-GAME_SPEED: float = 100.0
+GAME_SPEED: float = 1.0
 
 # RAM debug mode
 MEMORY_DEBUG: bool = False

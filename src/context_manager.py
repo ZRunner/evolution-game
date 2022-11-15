@@ -1,4 +1,3 @@
-import time
 from multiprocessing.pool import Pool
 from typing import Optional
 
@@ -73,7 +72,7 @@ class ContextManager:
             for creature2 in creatures[i+1:]:
                 if len(children) > 20:
                     break
-                if creature1.can_repro and creature2.can_repro and creature1.rectangle.colliderect(creature2.rectangle):
+                if creature1.can_repro(self.time) and creature2.can_repro(self.time) and creature1.rectangle.colliderect(creature2.rectangle):
                     # create the child
                     child = creature_reproduction(creature1, creature2, self.highest_creature_id + 1, self.time)
                     # make it spawn between its parents
@@ -84,8 +83,8 @@ class ContextManager:
                     # increment ID
                     self.highest_creature_id += 1
                     # update their parent
-                    creature1.last_reproduction = round(time.time())
-                    creature2.last_reproduction = round(time.time())
+                    creature1.last_reproduction = self.time
+                    creature2.last_reproduction = self.time
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
         for child in children_list:
