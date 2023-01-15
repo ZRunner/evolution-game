@@ -24,9 +24,12 @@ FRICTION: float = 0.8
 INITIAL_FOOD_QUANTITY: int = 200
 
 # Creatures count at the beginning
-CREATURES_COUNT: int = 200
+INITIAL_CREATURES_COUNT: int = 200
 
-# Energy points each creature has at the beginning
+# Max creatures count at any time
+MAX_CREATURES_COUNT: int = 1000
+
+# Energy points each creature has at the beginning of the game
 CREATURE_STARTING_ENERGY: int = 30
 
 # Minimum food ready to be digested at the beginning
@@ -70,4 +73,4 @@ CREATURE_MIN_REPRODUCTION_STATE: float = 0.1
 CREATURE_REPRO_COOLDOWN: int = 25
 
 # Energy consumed by a creature when reproducing, multiplied by the size of the child
-CREATURE_REPRO_ENERGY_FACTOR: float = 1.0
+CREATURE_REPRO_ENERGY_FACTOR: float = 1.1

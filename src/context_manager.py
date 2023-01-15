@@ -10,8 +10,8 @@ from .mp_utils import CreatureProcessMove, mp_execute_move
 class ContextManager:
 
     def __init__(self):
-        self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.CREATURES_COUNT)}
-        self.highest_creature_id = config.CREATURES_COUNT - 1
+        self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.INITIAL_CREATURES_COUNT)}
+        self.highest_creature_id = config.INITIAL_CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
             FoodGenerator(None, 160, 0.75),
             FoodGenerator(None, 80, 0.4),
@@ -66,11 +66,12 @@ class ContextManager:
         "If two creatures are in contact and ready to reproduce, make them have a child"
         children: set[Creature] = set()
         creatures = list(self.creatures.values())
+        existing_creatures_count = len(self.creatures)
         for i, creature1 in enumerate(creatures):
-            if len(children) > 20:
+            if len(children) > 20 or len(children) + existing_creatures_count > config.MAX_CREATURES_COUNT:
                 break
             for creature2 in creatures[i+1:]:
-                if len(children) > 20:
+                if len(children) > 20 or len(children) + existing_creatures_count > config.MAX_CREATURES_COUNT:
                     break
                 if creature1.can_repro(self.time) and creature2.can_repro(self.time) and creature1.rectangle.colliderect(creature2.rectangle):
                     # create the child

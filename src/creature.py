@@ -53,7 +53,7 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
     digestion_speed = uniform(min(parent1.digestion_speed, parent2.digestion_speed), max(parent1.digestion_speed, parent2.digestion_speed))
     vision = randint(min(parent1.vision, parent2.vision), max(parent1.vision, parent2.vision))
     generation = max(parent1.generation, parent2.generation) + 1
-    return Creature(
+    creature = Creature(
         creature_id,
         generation,
         timestamp,
@@ -67,6 +67,8 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
             "vision": vision,
         }
     )
+    creature.energy = min(config.CREATURE_STARTING_ENERGY, (parent1.energy + parent2.energy) / 2)
+    return creature
 
 
 class CreatureGeneratedAttributes(TypedDict):
