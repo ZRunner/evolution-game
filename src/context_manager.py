@@ -68,10 +68,10 @@ class ContextManager:
         creatures = list(self.creatures.values())
         existing_creatures_count = len(self.creatures)
         for i, creature1 in enumerate(creatures):
-            if len(children) > 20 or len(children) + existing_creatures_count > config.MAX_CREATURES_COUNT:
+            if len(children) > 20 or len(children) + existing_creatures_count >= config.MAX_CREATURES_COUNT:
                 break
             for creature2 in creatures[i+1:]:
-                if len(children) > 20 or len(children) + existing_creatures_count > config.MAX_CREATURES_COUNT:
+                if len(children) > 20 or len(children) + existing_creatures_count >= config.MAX_CREATURES_COUNT:
                     break
                 if creature1.can_repro(self.time) and creature2.can_repro(self.time) and creature1.rectangle.colliderect(creature2.rectangle):
                     # create the child
@@ -86,8 +86,10 @@ class ContextManager:
                     # update their parent
                     creature1.last_reproduction = self.time
                     creature2.last_reproduction = self.time
-                    creature1.energy -= config.CREATURE_REPRO_ENERGY_FACTOR * child.size
-                    creature2.energy -= config.CREATURE_REPRO_ENERGY_FACTOR * child.size
+                    lost_energy = config.CREATURE_REPRO_ENERGY_FACTOR * (child.size ** 0.7)
+                    creature1.energy -= lost_energy
+                    creature2.energy -= lost_energy
+                    child.energy = lost_energy * 1.75
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
         for child in children_list:

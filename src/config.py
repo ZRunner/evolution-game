@@ -73,4 +73,4 @@ CREATURE_MIN_REPRODUCTION_STATE: float = 0.1
 CREATURE_REPRO_COOLDOWN: int = 25
 
 # Energy consumed by a creature when reproducing, multiplied by the size of the child
-CREATURE_REPRO_ENERGY_FACTOR: float = 1.1
+CREATURE_REPRO_ENERGY_FACTOR: float = 10.0
