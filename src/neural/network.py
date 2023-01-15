@@ -39,6 +39,19 @@ ACTION_NEURONS = [
 AnyNeuron = Union[InputNeuron, TransitionNeuron]
 
 
+def merge_wires(set_1, set_2):
+    "Merge 2 sets of wires, and remove any duplicated connection"
+    wires: list[tuple[AnyNeuron, float, TransitionNeuron]] = []
+    neurons_map: dict[str, AnyNeuron] = {}
+    for wire in set_1 + set_2:
+        source = neurons_map.get(wire[0].name, wire[0])
+        destination: TransitionNeuron = neurons_map.get(wire[2].name, wire[2]) # type: ignore       
+        if not any(w[0] == source and w[2] == destination for w in wires):
+            wires.append((source, wire[1], destination))
+            neurons_map[source.name] = source
+            neurons_map[destination.name] = destination
+    return wires
+
 class NeuralNetworkGenerationAgent:
     "Manage generating new neural networks"
 
@@ -50,22 +63,25 @@ class NeuralNetworkGenerationAgent:
 
         new_network.graph = NeuralNetworkGraph()
         new_network.wires.clear()
-        wires_pool = parent1.wires + parent2.wires
+        # get a list of unique connections from both parents
+        wires_pool = merge_wires(parent1.wires, parent2.wires)
+        if new_network.connections_number > len(wires_pool):
+            new_network.connections_number = len(wires_pool)
 
-        # make sure to keep only one version of each neuron by name
-        neurons_pool = [n for wire in wires_pool for n in wire if isinstance(n, AnyNeuron)]
-        for neuron in neurons_pool:
-            wires_pool: list[tuple[AnyNeuron, float, TransitionNeuron]] = [
-                [n if isinstance(n, float) or n.name !=
-                 neuron.name else neuron for n in wire]
-                for wire in wires_pool
-            ]  # type: ignore
-
+        i = 0
         while len(new_network.wires) < new_network.connections_number:
-            while len(new_network.wires) < new_network.connections_number or len(new_network.input_neurons) == 0 or len(new_network.output_neurons) == 0:
+            i += 1
+            j = 0
+            target_connections_number = min(len(wires_pool), new_network.connections_number + 2)
+            while len(new_network.wires) < target_connections_number or len(new_network.input_neurons) == 0 or len(new_network.output_neurons) == 0:
                 wire = choice([w for w in wires_pool if w not in new_network.wires])
                 new_network.add_wire(*wire)
+                j += 1
+                if j > 1000:
+                    raise ValueError("Too many iterations")
             new_network.cleanup_wires()
+            if i > 1000:
+                raise ValueError("Too many iterations")
         
         return new_network.wires
 
@@ -86,7 +102,14 @@ class NeuralNetworkGenerationAgent:
     
     def generate(self):
         "Actually add more neurons into the network, and make sure we have enough connections"
+        # if no connection is required, return an empty network
+        if self.connections_number == 0:
+            return []
+        i = 0
         while len(self.wires) < self.connections_number or len(self.input_neurons) == 0 or len(self.output_neurons) == 0:
+            i += 1
+            if i > 1000:
+                raise ValueError("Too many iterations")
             input_n: Union[InputNeuron, TransitionNeuron] = choice(
                 self.input_pool + self.hidden_neurons  # type: ignore
             )
