@@ -13,8 +13,8 @@ class ContextManager:
         self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.INITIAL_CREATURES_COUNT)}
         self.highest_creature_id = config.INITIAL_CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
-            FoodGenerator(None, 160, 0.75),
-            FoodGenerator(None, 80, 0.4),
+            FoodGenerator(None, 160, 0.8),
+            FoodGenerator(None, 80, 0.5),
             FoodGenerator(None, 40, 0.3),
         ]
         self.foods: list[FoodPoint] = []
