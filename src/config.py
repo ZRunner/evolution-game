@@ -18,7 +18,7 @@ GAME_SPEED: float = 1.0
 MEMORY_DEBUG: bool = False
 
 # Friction coefficient used in acceleration calculs
-FRICTION: float = 0.2
+FRICTION: float = 0.8
 
 # Approximative Initial food quantities per generator
 INITIAL_FOOD_QUANTITY: int = 200
@@ -39,7 +39,7 @@ MAX_CREATURE_ACC: float = 0.0001
 MAX_CREATURE_VEL: float = 0.08
 
 # Maximum creature velocity decrease coefficient (on each axis)
-CREATURE_DECELERATION: float = 2e-5
+CREATURE_DECELERATION: float = 5e-7
 
 # Amount of energy lost by idle creatures each second
 CREATURE_STILL_ENERGY: float = 0.15

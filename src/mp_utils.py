@@ -32,6 +32,7 @@ class CreatureProcessMove:
         self._update_position(new_pos)
     
     def _update_acceleration(self, delta_t: int):
+        "Update the acceleration vector based on the given acceleration (from action neurons) and friction"
         # calculate friction to apply to acceleration
         fr_max = Vector2(
             config.FRICTION * sqrt(self.size) * sign(self.own_acceleration.x),
@@ -54,8 +55,8 @@ class CreatureProcessMove:
         self.vel += self.acc / 100 * delta_t
         # calculate deceleration from config and current direction
         self.deceleration = Vector2(
-            config.CREATURE_DECELERATION * sign(self.vel.x),
-            config.CREATURE_DECELERATION * sign(self.vel.y)
+            config.CREATURE_DECELERATION * sign(self.vel.x) * delta_t,
+            config.CREATURE_DECELERATION * sign(self.vel.y) * delta_t
         )
         # make sure deceleration is not greater than current velocity
         if abs(self.deceleration.x) > abs(self.vel.x):
@@ -84,6 +85,7 @@ class CreatureProcessMove:
             self.energy -= light_points / 700
     
     def _update_position(self, new_pos: Vector2):
+        "Make sure the creature stays in the screen, then apply the given position"
         if new_pos.x > config.WIDTH:
             new_pos.x = 0
         elif new_pos.x < 0:
