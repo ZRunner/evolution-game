@@ -38,8 +38,8 @@ MAX_CREATURE_ACC: float = 0.0001
 # Maximum creature veolocity (on each axis)
 MAX_CREATURE_VEL: float = 0.08
 
-# Maximum reature velocity decrease coefficient (on each axis)
-CREATURE_DECELERATION: float = 1e-5
+# Maximum creature velocity decrease coefficient (on each axis)
+CREATURE_DECELERATION: float = 2e-5
 
 # Amount of energy lost by idle creatures each second
 CREATURE_STILL_ENERGY: float = 0.15
@@ -67,4 +67,7 @@ CREATURE_MAX_LIGHT_DISTANCE_EMISSION: int = 200
 CREATURE_MIN_REPRODUCTION_STATE: float = 0.1
 
 # Minimum time in seconds between two reproductions from the same creature
-CREATURE_REPRO_COOLDOWN: int = 20
+CREATURE_REPRO_COOLDOWN: int = 25
+
+# Energy consumed by a creature when reproducing, multiplied by the size of the child
+CREATURE_REPRO_ENERGY_FACTOR: float = 1.0

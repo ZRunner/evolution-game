@@ -52,15 +52,17 @@ class CreatureProcessMove:
     
     def _update_velocity(self, delta_t: int):
         self.vel += self.acc / 100 * delta_t
-        # apply deceleration
+        # calculate deceleration from config and current direction
         self.deceleration = Vector2(
             config.CREATURE_DECELERATION * sign(self.vel.x),
             config.CREATURE_DECELERATION * sign(self.vel.y)
         )
+        # make sure deceleration is not greater than current velocity
         if abs(self.deceleration.x) > abs(self.vel.x):
             self.deceleration.x = self.vel.x * 0.95
         if abs(self.deceleration.y) > abs(self.vel.y):
             self.deceleration.y = self.vel.y * 0.95
+        # apply deceleration
         self.vel -= self.deceleration
         
         # apply max speed control

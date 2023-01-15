@@ -85,6 +85,8 @@ class ContextManager:
                     # update their parent
                     creature1.last_reproduction = self.time
                     creature2.last_reproduction = self.time
+                    creature1.energy -= config.CREATURE_REPRO_ENERGY_FACTOR * child.size
+                    creature2.energy -= config.CREATURE_REPRO_ENERGY_FACTOR * child.size
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
         for child in children_list:

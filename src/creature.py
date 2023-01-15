@@ -115,7 +115,7 @@ class Creature(Sprite):
 
         # fixed attributes
         self.life = self.max_life
-        self.energy = config.CREATURE_STARTING_ENERGY
+        self.energy: float = config.CREATURE_STARTING_ENERGY
         self.digesting = config.CREATURE_MIN_STARTING_DIGESTING_POINTS + self.size
         self.color = self.calcul_color()
         self.surf = Surface((self.size, self.size))
