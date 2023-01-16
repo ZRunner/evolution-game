@@ -74,3 +74,9 @@ CREATURE_REPRO_COOLDOWN: int = 25
 
 # Energy consumed by a creature when reproducing, multiplied by the size of the child
 CREATURE_REPRO_ENERGY_FACTOR: float = 10.0
+
+# Initial energy percentage of a child (multiplied by the energy lost by both parents)
+CHILD_INITIAL_ENERGY_PERCENT: float = 0.6
+
+# Initial life percentage of a child
+CHILD_INITIAL_LIFE_PERCENT: float = 0.7

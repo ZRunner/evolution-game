@@ -89,7 +89,10 @@ class ContextManager:
                     lost_energy = config.CREATURE_REPRO_ENERGY_FACTOR * (child.size ** 0.7)
                     creature1.energy -= lost_energy
                     creature2.energy -= lost_energy
-                    child.energy = lost_energy * 1.75
+                    # give 0.3x the energy of each parent to the child
+                    child.energy = lost_energy * config.CHILD_INITIAL_ENERGY_PERCENT
+                    # set the initial life of the child to 70%
+                    child.life = round(child.max_life * config.CHILD_INITIAL_LIFE_PERCENT)
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
         for child in children_list:
