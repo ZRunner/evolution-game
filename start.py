@@ -110,15 +110,7 @@ def main():
                     click = pygame.Vector2(event.pos)
                     selected_creature_id = detect_selection(click, context.creatures.values())
                 if event.type == UPDATE_CREATURES_ENERGIES and not is_pause:
-                    # count_before = len([0 for i in get_objects() if isinstance(i, nx.DiGraph)])
                     context.update_creatures_energies()
-                    # count_after = len([0 for i in get_objects() if isinstance(i, nx.DiGraph)])
-                    # should_have_died = [i for i in get_objects() if isinstance(i, Creature) and i.life <= 0]
-                    # for c in should_have_died:
-                    #     refs =  gc.get_referrers(c)
-                    #     print("SHOULD HAVE DIED", c, refs)
-                    #     del refs
-                    # print("before", count_before, "after", count_after)
                 if event.type == GENERATE_FOOD and not is_pause:
                     context.generate_food()
 
