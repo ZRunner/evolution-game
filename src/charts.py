@@ -81,6 +81,7 @@ class ChartsManager:
             "avg_size": ChartData("Average Size"),
             "avg_energy": ChartData("Average Energy"),
             "avg_life": ChartData("Average Life Percentage"),
+            "avg_regen_cost": ChartData("Average Regen Cost"),
             "foods_total": ChartData("Total food value"),
             "avg_light": ChartData("Average light"),
             "generations": ChartData("Average creature generation"),
@@ -149,10 +150,10 @@ class ChartsManager:
         self.datas["fps"].append_value(ts, clock.get_fps())
         # Creatures Velocity
         if len(creatures) > 0:
-            vel = [creature.vel.length() for creature in creatures]
+            vel = [creature.velocity for creature in creatures]
             self.datas["avg_vel"].append_value(ts, sum(vel)/len(vel))
             # Creatures Acceleration
-            acc = [creature.acc.length() for creature in creatures]
+            acc = [creature.acceleration for creature in creatures]
             self.datas["avg_acc"].append_value(ts, sum(acc)/len(acc))
             # Creatures Count
             self.datas["creatures_count"].append_value(ts, len(creatures))
@@ -165,6 +166,9 @@ class ChartsManager:
             # Average Life percentage
             lifes = [creature.life / creature.max_life for creature in creatures]
             self.datas["avg_life"].append_value(ts, sum(lifes)/len(lifes))
+            # Average regeneration cost
+            regen_costs = [creature.life_regen_cost for creature in creatures]
+            self.datas["avg_regen_cost"].append_value(ts, sum(regen_costs)/len(regen_costs))
             # Total Food Value
             food = sum(point.quantity for point in context.foods)
             self.datas["foods_total"].append_value(ts, food)

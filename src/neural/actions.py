@@ -1,19 +1,19 @@
 from .abc import ActionNeuron
 from .. import config
 
-class MoveXActionNeuron(ActionNeuron):
-    "Moves in the X axis"
-    name = "Move X"
+class MoveActionNeuron(ActionNeuron):
+    "Create an acceleration movement for the creature"
+    name = "Acceleration"
 
     def act(self, creature):
-        creature.own_acceleration.x = self.value
+        creature.acceleration_from_neuron = self.value
 
-class MoveYActionNeuron(ActionNeuron):
-    "Moves in the z axis"
-    name = "Move Y"
+class RotateActionNeuron(ActionNeuron):
+    "Rotate the creature direction"
+    name = "Rotation"
 
     def act(self, creature):
-        creature.own_acceleration.y = self.value
+        creature.rotation_from_neuron = self.value / 20
 
 class EmitLightActionNeuron(ActionNeuron):
     "Emit some light visible by other creatures"

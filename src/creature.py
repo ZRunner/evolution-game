@@ -109,7 +109,8 @@ class Creature(Sprite):
             self.vision = round(random() * 124 + 1)
 
         # neurons outputs
-        self.own_acceleration = Vector2(0, 0)
+        self.acceleration_from_neuron = 0.0
+        self.rotation_from_neuron = 0.0
         self.light_emission = 0.0
         self.ready_for_reproduction: bool = False
 
@@ -127,9 +128,10 @@ class Creature(Sprite):
         self.birth = timestamp
         # some vectors
         self.pos = Vector2(self.rectangle.center)
-        self.vel = Vector2(0, 0)
-        self.acc = Vector2(0, 0)
-        self.deceleration = Vector2(0, 0)
+        self.direction = Vector2(random(), random()).normalize()
+        self.velocity = 0.0
+        self.acceleration = 0.0
+        self.deceleration = 0.0
 
     def can_repro(self, timestamp: float):
         return self.ready_for_reproduction and timestamp - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
@@ -145,7 +147,6 @@ class Creature(Sprite):
         self.network.update_input(self, context)
         self.network.tick()
         self.network.act(self)
-
 
     def update_energy(self):
         "Update the creature energy, life and digestion"
@@ -226,12 +227,17 @@ class Creature(Sprite):
                 Color(255, 230, 100, min(255, int(self.light_emission)))
                 )
 
+    def draw_direction(self, surface: Surface):
+        "Draw a line representing the entity direction"
+        draw.line(surface, "red", self.pos, self.pos + self.direction * abs(self.velocity) * 1000, width=1)
+
     def draw(self, surface: Surface, is_selected: bool=False):
         "Draw the sprite"
         surface.blit(self.surf, self.rectangle)
         if is_selected:
             self.draw_selection_frame(surface)
             self.draw_vision_circle(surface)
+            self.draw_direction(surface)
         if self.life < self.max_life:
             self.damager.draw(surface, self.rectangle)
 

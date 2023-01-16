@@ -36,7 +36,7 @@ class SpeedInputNeuron(InputNeuron):
     name = "Speed"
 
     def update(self, subject, context):
-        self.value = sigmoid(subject.vel.length() * 10)
+        self.value = sigmoid(subject.velocity * 50)
 
 class LifeInputNeuron(InputNeuron):
     "Corresponds to the % of current life of the creature"

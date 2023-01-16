@@ -15,9 +15,11 @@ class CreatureProcessMove:
     def __init__(self, creature: "Creature"):
         self.creature_id = creature.creature_id
         self.size = creature.size
-        self.own_acceleration = creature.own_acceleration
-        self.acc = creature.acc
-        self.vel = creature.vel
+        self.acceleration_from_neuron = creature.acceleration_from_neuron
+        self.rotation_from_neuron = creature.rotation_from_neuron
+        self.direction = creature.direction
+        self.acceleration = creature.acceleration
+        self.velocity = creature.velocity
         self.deceleration = creature.deceleration
         self.pos = creature.pos
         self.energy = creature.energy
@@ -27,50 +29,40 @@ class CreatureProcessMove:
         "delta_t is time since last move in milliseconds"
         self._update_acceleration(delta_t)
         self._update_velocity(delta_t)
-        new_pos = self.pos + 0.5 * (self.vel) * delta_t
+        self._update_direction(delta_t)
+        new_pos = self.pos + 0.5 * self.direction * self.velocity * delta_t
         self._update_energy(new_pos, delta_t)
         self._update_position(new_pos)
     
     def _update_acceleration(self, delta_t: int):
         "Update the acceleration vector based on the given acceleration (from action neurons) and friction"
         # calculate friction to apply to acceleration
-        fr_max = Vector2(
-            config.FRICTION * sqrt(self.size) * sign(self.own_acceleration.x),
-            config.FRICTION * sqrt(self.size) * sign(self.own_acceleration.y)
-        )
-        if abs(fr_max.x) > abs(self.own_acceleration.x):
-            fr_max.x = self.own_acceleration.x * 0.95
-        if abs(fr_max.y) > abs(self.own_acceleration.y):
-            fr_max.y = self.own_acceleration.y * 0.95
+        fr_max = config.FRICTION * sqrt(self.size) * sign(self.acceleration_from_neuron)
+        if abs(fr_max) > abs(self.acceleration_from_neuron):
+            fr_max = self.acceleration_from_neuron * 0.95
 
-        self.acc = (self.own_acceleration - fr_max) / self.size
+        self.acceleration = (self.acceleration_from_neuron - fr_max) / self.size
 
         # apply max acceleration control
-        if abs(self.acc.x) > config.MAX_CREATURE_ACC:
-            self.acc.x = config.MAX_CREATURE_ACC * sign(self.acc.x)
-        if abs(self.acc.y) > config.MAX_CREATURE_ACC:
-            self.acc.y = config.MAX_CREATURE_ACC * sign(self.acc.y)
+        if abs(self.acceleration) > config.MAX_CREATURE_ACC:
+            self.acceleration = config.MAX_CREATURE_ACC * sign(self.acceleration)
     
     def _update_velocity(self, delta_t: int):
-        self.vel += self.acc / 100 * delta_t
+        self.velocity += self.acceleration / 100 * delta_t
         # calculate deceleration from config and current direction
-        self.deceleration = Vector2(
-            config.CREATURE_DECELERATION * sign(self.vel.x) * delta_t,
-            config.CREATURE_DECELERATION * sign(self.vel.y) * delta_t
-        )
+        self.deceleration = config.CREATURE_DECELERATION * sign(self.velocity) * delta_t
         # make sure deceleration is not greater than current velocity
-        if abs(self.deceleration.x) > abs(self.vel.x):
-            self.deceleration.x = self.vel.x * 0.95
-        if abs(self.deceleration.y) > abs(self.vel.y):
-            self.deceleration.y = self.vel.y * 0.95
+        if abs(self.deceleration) > abs(self.velocity):
+            self.deceleration = self.velocity * 0.95
         # apply deceleration
-        self.vel -= self.deceleration
+        self.velocity -= self.deceleration
         
         # apply max speed control
-        if abs(self.vel.x) > config.MAX_CREATURE_VEL:
-            self.vel.x = config.MAX_CREATURE_VEL * sign(self.vel.x)
-        if abs(self.vel.y) > config.MAX_CREATURE_VEL:
-            self.vel.y = config.MAX_CREATURE_VEL * sign(self.vel.y)
+        if abs(self.velocity) > config.MAX_CREATURE_VEL:
+            self.velocity = config.MAX_CREATURE_VEL * sign(self.velocity)
+    
+    def _update_direction(self, delta_t: int):
+        self.direction = self.direction.rotate(self.rotation_from_neuron * delta_t)
     
     def _update_energy(self, new_pos: Vector2, delta_t: int):
         distance = new_pos.distance_to(self.pos)
@@ -98,11 +90,13 @@ class CreatureProcessMove:
         self.pos = new_pos
     
     def apply_to_creature(self, creature: "Creature"):
-        creature.own_acceleration = self.own_acceleration
-        creature.acc = self.acc
-        creature.vel = self.vel
+        creature.acceleration_from_neuron = self.acceleration_from_neuron
+        creature.rotation_from_neuron = self.rotation_from_neuron
+        creature.acceleration = self.acceleration
+        creature.velocity = self.velocity
         creature.deceleration = self.deceleration
         creature.pos = self.pos
+        creature.direction = self.direction
         creature.energy = self.energy
         creature.rectangle.center = (int(self.pos.x), int(self.pos.y))
         return creature

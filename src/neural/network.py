@@ -30,8 +30,8 @@ INPUT_NEURONS = [
     inputs.AgeNeuron(),
 ]
 ACTION_NEURONS = [
-    actions.MoveXActionNeuron(),
-    actions.MoveYActionNeuron(),
+    actions.MoveActionNeuron(),
+    actions.RotateActionNeuron(),
     actions.EmitLightActionNeuron(),
     actions.ReadyForReproductionActionNeuron(),
 ]
@@ -152,7 +152,7 @@ class NeuralNetworkGenerationAgent:
             self.remove_neuron(neuron)
         
         # make sure to always have at least one moving neuron
-        moving_neurons = [neuron for neuron in self.output_neurons if "Move" in neuron.name]
+        moving_neurons = [neuron for neuron in self.output_neurons if isinstance(neuron, actions.MoveActionNeuron)]
         if len(moving_neurons) == 0 and len(self.output_neurons) > 0:
             random_neuron = choice(self.output_neurons)
             to_remove.add(random_neuron)
