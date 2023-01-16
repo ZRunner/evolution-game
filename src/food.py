@@ -11,7 +11,7 @@ from . import config
 
 class FoodGenerator:
     """A point generating food in its range
-    Profusion is the probability to spawn a food each tick, between 0.0 and 1.0"""
+    Profusion is the probability to spawn a food each second, between 0.0 and 1.0"""
 
     def __init__(self, position: Optional[Vector2], radius: int, profusion: float):
         if position is None:
