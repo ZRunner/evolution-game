@@ -46,7 +46,7 @@ class PanelsManager:
             f"Position: ({creature.pos.x:.0f}, {creature.pos.y:.0f})",
             f"Speed: {creature.velocity*1000:.1f}p/s",
             f"Acceleration: {creature.acceleration*1000:.1f}p/s²",
-            f"Direction: ({creature.direction.x:.3f}, {creature.direction.y:.3f})",
+            f"Direction: {creature.direction.as_polar()[1]:.0f}° ({creature.direction.x:.3f}, {creature.direction.y:.3f})",
             f"Life: {creature.life} / {creature.max_life} (regen cost: {creature.life_regen_cost})",
             f"Energy: {creature.energy:.1f}",
             f"Digestion: {creature.digesting} (efficiency: {creature.digestion_efficiency}, speed: {creature.digestion_speed})",
