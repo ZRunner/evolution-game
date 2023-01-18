@@ -58,8 +58,8 @@ class FoodDistanceInputNeuron(InputNeuron):
 
     def update(self, subject, context):
         v = context.get_food_distance_for_creature(subject)
-        if v is not None and v < subject.vision:
-            self.value = 1 - v / subject.vision
+        if v is not None and v < subject.vision_distance:
+            self.value = 1 - v / subject.vision_distance
         else:
             self.value = -1
 

@@ -82,6 +82,7 @@ class ChartsManager:
             "avg_energy": ChartData("Average Energy"),
             "avg_life": ChartData("Average Life Percentage"),
             "avg_regen_cost": ChartData("Average Regen Cost"),
+            "avg_vision_angle": ChartData("Average Vision Angle"),
             "foods_total": ChartData("Total food value"),
             "avg_light": ChartData("Average light"),
             "generations": ChartData("Average creature generation"),
@@ -169,6 +170,8 @@ class ChartsManager:
             # Average regeneration cost
             regen_costs = [creature.life_regen_cost for creature in creatures]
             self.datas["avg_regen_cost"].append_value(ts, sum(regen_costs)/len(regen_costs))
+            vision_angles = [creature.vision_angle for creature in creatures]
+            self.datas["avg_vision_angle"].append_value(ts, sum(vision_angles)/len(vision_angles))
             # Total Food Value
             food = sum(point.quantity for point in context.foods)
             self.datas["foods_total"].append_value(ts, food)

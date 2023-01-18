@@ -50,7 +50,7 @@ class PanelsManager:
             f"Life: {creature.life} / {creature.max_life} (regen cost: {creature.life_regen_cost})",
             f"Energy: {creature.energy:.1f}",
             f"Digestion: {creature.digesting} (efficiency: {creature.digestion_efficiency}, speed: {creature.digestion_speed})",
-            f"Vision: {creature.vision:.0f}",
+            f"Vision: {creature.vision_distance:.0f}p - {creature.vision_angle}°",
             f"Light emission: {creature.light_emission}",
             f"Ready for reproduction: {repr_label}",
         ]

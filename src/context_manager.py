@@ -50,8 +50,14 @@ class ContextManager:
         "Get the distance between a creature and its nearest food point"
         best: Optional[float] = None
         for food in self.foods:
-            if best is None or food.position.distance_to(creature.pos) < best:
-                best = food.position.distance_to(creature.pos)
+            # check if the point is within the vision circle
+            if best is None or food.position.distance_to(creature.pos) < min(creature.vision_distance, best):
+                # check if the point is within the vision cone
+                angle = abs(creature.direction.angle_to(food.position - creature.pos))
+                if angle > 180:
+                    angle = abs(360 - angle)
+                if angle <= creature.vision_angle/2:
+                    best = food.position.distance_to(creature.pos)
         return best
 
     def get_light_level_for_creature(self, creature: Creature):

@@ -1,5 +1,6 @@
+from math import radians
 import time
-from random import gauss, randint, random, randrange, uniform
+from random import gauss, randint, random, randrange, uniform, choice
 from typing import TYPE_CHECKING, Optional, TypedDict
 
 from pygame import Color, draw
@@ -51,7 +52,8 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
     life_regen_cost = randint(min(parent1.life_regen_cost, parent2.life_regen_cost), max(parent1.life_regen_cost, parent2.life_regen_cost))
     digestion_efficiency = uniform(min(parent1.digestion_efficiency, parent2.digestion_efficiency), max(parent1.digestion_efficiency, parent2.digestion_efficiency))
     digestion_speed = uniform(min(parent1.digestion_speed, parent2.digestion_speed), max(parent1.digestion_speed, parent2.digestion_speed))
-    vision = randint(min(parent1.vision, parent2.vision), max(parent1.vision, parent2.vision))
+    vision_distance = randint(min(parent1.vision_distance, parent2.vision_distance), max(parent1.vision_distance, parent2.vision_distance))
+    vision_angle = choice([parent1.vision_angle, parent2.vision_angle])
     generation = max(parent1.generation, parent2.generation) + 1
     return Creature(
         creature_id,
@@ -64,7 +66,8 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
             "life_regen_cost": life_regen_cost,
             "digestion_efficiency": digestion_efficiency,
             "digestion_speed": digestion_speed,
-            "vision": vision,
+            "vision_distance": vision_distance,
+            "vision_angle": vision_angle,
         }
     )
 
@@ -76,7 +79,8 @@ class CreatureGeneratedAttributes(TypedDict):
     life_regen_cost: int
     digestion_efficiency: float
     digestion_speed: float
-    vision: int
+    vision_distance: int
+    vision_angle: int
 
 class Creature(Sprite):
     "A simple creature"
@@ -94,7 +98,8 @@ class Creature(Sprite):
             self.life_regen_cost = kwargs.get("life_regen_cost")
             self.digestion_efficiency = round(kwargs.get("digestion_efficiency"), 2)
             self.digestion_speed = round(kwargs.get("digestion_speed"), 1)
-            self.vision = kwargs.get("vision")
+            self.vision_distance = kwargs.get("vision_distance")
+            self.vision_angle = kwargs.get("vision_angle", 90)
         else:
             self.size = max(config.MIN_CREATURE_SIZE, round(gauss(
                 config.CREATURE_SIZE_AVG, config.CREATURE_SIZE_SIGMA)))
@@ -106,7 +111,8 @@ class Creature(Sprite):
             self.life_regen_cost = round(self.size * randint(1, 5)) + 1
             self.digestion_efficiency = round(random() * 1.8 + 0.2, 2)
             self.digestion_speed = round(random() * 4 + 0.8, 1)
-            self.vision = round(random() * 124 + 1)
+            self.vision_distance = round(random() * 124 + 1)
+            self.vision_angle = randint(10, 200)
 
         # neurons outputs
         self.acceleration_from_neuron = 0.0
@@ -212,14 +218,23 @@ class Creature(Sprite):
                     (centerx + size,  centery + space)  # right center bottom
                     )
     
-    def draw_vision_circle(self, surface: Surface):
-        "Draw a circle representing the entity vision"
-        draw.circle(surface, "aqua", self.rectangle.center, self.vision, width=1)
+    def draw_vision_cone(self, surface: Surface):
+        "Draw a cone representing the entity vision, based on the vision distance and angle"
+        # draw the 2 lines
+        draw.line(surface, "aqua", self.pos, self.pos + self.direction.rotate(self.vision_angle/2) * self.vision_distance, width=1)
+        draw.line(surface, "aqua", self.pos, self.pos + self.direction.rotate(-self.vision_angle/2) * self.vision_distance, width=1)
+        # draw the circle arc
+        arc_rectangle = Rect(self.pos.x - self.vision_distance, self.pos.y - self.vision_distance, self.vision_distance * 2, self.vision_distance * 2)
+        draw.arc(surface, "aqua",
+                 rect=arc_rectangle,
+                 start_angle=radians(self.direction.angle_to(Vector2(1, 0)) - self.vision_angle/2),
+                 stop_angle=radians(self.direction.angle_to(Vector2(1, 0)) + self.vision_angle/2),
+                 width=1
+                 )
     
     def draw_light_circle(self, surface: Surface):
         "Draw a circle representing the emitted light"
         if self.light_emission > 0:
-            # print(self.creature_id, self.light_emission)
             draw_circle_gradient(
                 surface,
                 Vector2(self.rectangle.center),
@@ -229,14 +244,15 @@ class Creature(Sprite):
 
     def draw_direction(self, surface: Surface):
         "Draw a line representing the entity direction"
-        draw.line(surface, "red", self.pos, self.pos + self.direction * abs(self.velocity) * 1000, width=1)
+        if self.velocity > 1e-5:
+            draw.line(surface, "red", self.pos, self.pos + self.direction * abs(self.velocity) * 1000, width=1)
 
     def draw(self, surface: Surface, is_selected: bool=False):
         "Draw the sprite"
         surface.blit(self.surf, self.rectangle)
         if is_selected:
             self.draw_selection_frame(surface)
-            self.draw_vision_circle(surface)
+            self.draw_vision_cone(surface)
             self.draw_direction(surface)
         if self.life < self.max_life:
             self.damager.draw(surface, self.rectangle)
