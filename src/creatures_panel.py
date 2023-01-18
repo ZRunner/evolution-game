@@ -38,12 +38,15 @@ class PanelsManager:
         repr_label = "Yes" if creature.can_repro(context.time) else (
             "No (cooldown)" if creature.last_reproduction + config.CREATURE_REPRO_COOLDOWN > context.time else "No (disabled neuron)"
             )
+        damage_label = "Yes" if creature.can_attack(context.time) else (
+            "No (cooldown)" if creature.last_damage_action + config.CREATURE_KILL_COOLDOWN > context.time else "No (disabled neuron)"
+            )
         # Info
         texts = [
             f"Generation {creature.generation}",
             f"Size: {creature.size}",
             f"Age: {context.time - creature.birth:.0f}s",
-            f"Position: ({creature.pos.x:.0f}, {creature.pos.y:.0f})",
+            f"Position: ({creature.position.x:.0f}, {creature.position.y:.0f})",
             f"Speed: {creature.velocity*1000:.1f}p/s",
             f"Acceleration: {creature.acceleration*1000:.1f}p/s²",
             f"Direction: {creature.direction.as_polar()[1]:.0f}° ({creature.direction.x:.3f}, {creature.direction.y:.3f})",
@@ -53,6 +56,8 @@ class PanelsManager:
             f"Vision: {creature.vision_distance:.0f}p - {creature.vision_angle}°",
             f"Light emission: {creature.light_emission}",
             f"Ready for reproduction: {repr_label}",
+            f"Max damage: {creature.max_damage}",
+            f"Ready to inflict damage: {damage_label}",
         ]
         for i, text in enumerate(texts):
             render = self.font.render(text, True, "white")

@@ -34,6 +34,7 @@ ACTION_NEURONS = [
     actions.RotateActionNeuron(),
     actions.EmitLightActionNeuron(),
     actions.ReadyForReproductionActionNeuron(),
+    actions.ReadyToKillActionNeuron(),
 ]
 
 AnyNeuron = Union[InputNeuron, TransitionNeuron]

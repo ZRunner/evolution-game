@@ -21,7 +21,7 @@ class CreatureProcessMove:
         self.acceleration = creature.acceleration
         self.velocity = creature.velocity
         self.deceleration = creature.deceleration
-        self.pos = creature.pos
+        self.pos = creature.position
         self.energy = creature.energy
         self.light_emission = creature.light_emission
     
@@ -95,7 +95,7 @@ class CreatureProcessMove:
         creature.acceleration = self.acceleration
         creature.velocity = self.velocity
         creature.deceleration = self.deceleration
-        creature.pos = self.pos
+        creature.position = self.pos
         creature.direction = self.direction
         creature.energy = self.energy
         creature.rectangle.center = (int(self.pos.x), int(self.pos.y))

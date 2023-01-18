@@ -156,6 +156,8 @@ def main():
                 charts.store_datas(clock, context)
                 # make children or smth
                 context.reproduce_creatures()
+                # and now kill everyone
+                context.attack_creatures()
 
             pygame.display.update()
             delta_t = round(clock.tick(config.FPS) * config.GAME_SPEED)

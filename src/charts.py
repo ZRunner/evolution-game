@@ -86,6 +86,7 @@ class ChartsManager:
             "foods_total": ChartData("Total food value"),
             "avg_light": ChartData("Average light"),
             "generations": ChartData("Average creature generation"),
+            "killers_percent": ChartData("Percentage of potential killers")
         }
         self.indexes = list(self.datas.keys())
         self.index = 0
@@ -181,5 +182,8 @@ class ChartsManager:
             # Average creature generation
             generations = [creature.generation for creature in creatures]
             self.datas["generations"].append_value(ts, sum(generations)/len(generations))
+            # Number of potential killers
+            killers = [creature for creature in creatures if creature.can_attack(ts)]
+            self.datas["killers_percent"].append_value(ts, len(killers) / len(creatures))
         elif self.datas["creatures_count"].data[-2] > 0:
             self.datas["creatures_count"].append_value(ts, len(creatures))

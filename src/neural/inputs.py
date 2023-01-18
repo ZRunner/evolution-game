@@ -8,14 +8,14 @@ class XPositionInputNeuron(InputNeuron):
     name = "X Position"
 
     def update(self, subject, context):
-        self.value = sigmoid(subject.pos.x * 0.003)
+        self.value = sigmoid(subject.position.x * 0.003)
 
 class YPositionInputNeuron(InputNeuron):
     "Corresponds to the Y position of the creature"
     name = "Y Position"
 
     def update(self, subject, context):
-        self.value = sigmoid(subject.pos.y * 0.003)
+        self.value = sigmoid(subject.position.y * 0.003)
 
 class EnergyInputNeuron(InputNeuron):
     "Corresponds to the energy of the creature"

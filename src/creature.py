@@ -54,6 +54,7 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
     digestion_speed = uniform(min(parent1.digestion_speed, parent2.digestion_speed), max(parent1.digestion_speed, parent2.digestion_speed))
     vision_distance = randint(min(parent1.vision_distance, parent2.vision_distance), max(parent1.vision_distance, parent2.vision_distance))
     vision_angle = choice([parent1.vision_angle, parent2.vision_angle])
+    max_damage = choice([parent1.max_damage, parent2.max_damage])
     generation = max(parent1.generation, parent2.generation) + 1
     return Creature(
         creature_id,
@@ -68,6 +69,7 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
             "digestion_speed": digestion_speed,
             "vision_distance": vision_distance,
             "vision_angle": vision_angle,
+            "max_damage": max_damage,
         }
     )
 
@@ -81,6 +83,7 @@ class CreatureGeneratedAttributes(TypedDict):
     digestion_speed: float
     vision_distance: int
     vision_angle: int
+    max_damage: int
 
 class Creature(Sprite):
     "A simple creature"
@@ -100,9 +103,11 @@ class Creature(Sprite):
             self.digestion_speed = round(kwargs.get("digestion_speed"), 1)
             self.vision_distance = kwargs.get("vision_distance")
             self.vision_angle = kwargs.get("vision_angle", 90)
+            self.max_damage = kwargs.get("max_damage")
         else:
             self.size = max(config.MIN_CREATURE_SIZE, round(gauss(
-                config.CREATURE_SIZE_AVG, config.CREATURE_SIZE_SIGMA)))
+                config.CREATURE_SIZE_AVG, config.CREATURE_SIZE_SIGMA
+            )))
             self.network = NeuralNetwork(
                 randint(config.CREATURES_MIN_CONNECTIONS, config.CREATURES_MAX_CONNECTIONS),
                 randrange(config.CREATURES_MAX_HIDDEN_NEURONS)
@@ -113,12 +118,16 @@ class Creature(Sprite):
             self.digestion_speed = round(random() * 4 + 0.8, 1)
             self.vision_distance = round(random() * 124 + 1)
             self.vision_angle = randint(10, 200)
+            self.max_damage = round(gauss(
+                config.CREATURE_DMG_AVG, config.CREATURE_DMG_SIGMA
+            ))
 
         # neurons outputs
         self.acceleration_from_neuron = 0.0
         self.rotation_from_neuron = 0.0
         self.light_emission = 0.0
         self.ready_for_reproduction: bool = False
+        self.ready_to_kill: bool = False
 
         # fixed attributes
         self.life = self.max_life
@@ -130,10 +139,13 @@ class Creature(Sprite):
         self.rectangle = self.surf.get_rect(
             center=(randrange(config.WIDTH), randrange(config.HEIGHT)))
         self.damager = DamageDisplayer(self.size)
-        self.last_reproduction = timestamp
+        # timestamp and cooldown-related attributes
         self.birth = timestamp
+        self.last_reproduction = timestamp
+        self.last_damage_action = timestamp
+        self.last_damage_received = 0
         # some vectors
-        self.pos = Vector2(self.rectangle.center)
+        self.position = Vector2(self.rectangle.center)
         self.direction = Vector2(random(), random()).normalize()
         self.velocity = 0.0
         self.acceleration = 0.0
@@ -141,6 +153,9 @@ class Creature(Sprite):
 
     def can_repro(self, timestamp: float):
         return self.ready_for_reproduction and timestamp - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
+    
+    def can_attack(self, timestamp: float):
+        return self.ready_to_kill and timestamp - self.last_damage_action > config.CREATURE_KILL_COOLDOWN
 
     def calcul_color(self) -> Color:
         "Calcul the creature color based on its specs"
@@ -171,6 +186,15 @@ class Creature(Sprite):
         elif self.energy >= self.life_regen_cost and self.life < self.max_life:
             self.energy -= self.life_regen_cost
             self.life += 1
+
+    def eat(self, food: "FoodPoint"):
+        "Eat a food point"
+        self.digesting += food.quantity
+
+    def receive_damages(self, points: int):
+        "Register a loss of life points due to another creature hurting it"
+        self.life -= points
+        self.damager.hurt()
 
     def draw_selection_frame(self, surface: Surface):
         "Draw a red frame around the creature when it has been selected by the user"
@@ -221,10 +245,10 @@ class Creature(Sprite):
     def draw_vision_cone(self, surface: Surface):
         "Draw a cone representing the entity vision, based on the vision distance and angle"
         # draw the 2 lines
-        draw.line(surface, "aqua", self.pos, self.pos + self.direction.rotate(self.vision_angle/2) * self.vision_distance, width=1)
-        draw.line(surface, "aqua", self.pos, self.pos + self.direction.rotate(-self.vision_angle/2) * self.vision_distance, width=1)
+        draw.line(surface, "aqua", self.position, self.position + self.direction.rotate(self.vision_angle/2) * self.vision_distance, width=1)
+        draw.line(surface, "aqua", self.position, self.position + self.direction.rotate(-self.vision_angle/2) * self.vision_distance, width=1)
         # draw the circle arc
-        arc_rectangle = Rect(self.pos.x - self.vision_distance, self.pos.y - self.vision_distance, self.vision_distance * 2, self.vision_distance * 2)
+        arc_rectangle = Rect(self.position.x - self.vision_distance, self.position.y - self.vision_distance, self.vision_distance * 2, self.vision_distance * 2)
         draw.arc(surface, "aqua",
                  rect=arc_rectangle,
                  start_angle=radians(self.direction.angle_to(Vector2(1, 0)) - self.vision_angle/2),
@@ -245,7 +269,7 @@ class Creature(Sprite):
     def draw_direction(self, surface: Surface):
         "Draw a line representing the entity direction"
         if self.velocity > 1e-5:
-            draw.line(surface, "red", self.pos, self.pos + self.direction * abs(self.velocity) * 1000, width=1)
+            draw.line(surface, "red", self.position, self.position + self.direction * abs(self.velocity) * 1000, width=1)
 
     def draw(self, surface: Surface, is_selected: bool=False):
         "Draw the sprite"
@@ -256,7 +280,3 @@ class Creature(Sprite):
             self.draw_direction(surface)
         if self.life < self.max_life:
             self.damager.draw(surface, self.rectangle)
-
-    def eat(self, food: "FoodPoint"):
-        "Eat a food point"
-        self.digesting += food.quantity

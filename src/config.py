@@ -54,6 +54,10 @@ MIN_CREATURE_SIZE: int = 1
 CREATURE_SIZE_AVG: int = 4
 CREATURE_SIZE_SIGMA: int = 3
 
+# Average and sigma max damages done by a creature (gaussian curve)
+CREATURE_DMG_AVG: int = 3
+CREATURE_DMG_SIGMA: int = 2
+
 # Minimum connections number in a creature neural network
 CREATURES_MIN_CONNECTIONS: int = 2
 
@@ -65,6 +69,12 @@ CREATURES_MAX_HIDDEN_NEURONS: int = 25
 
 # Maximum visibility of emitted light
 CREATURE_MAX_LIGHT_DISTANCE_EMISSION: int = 200
+
+# Minimum neuron value for a creature to inflict damage
+CREATURE_MIN_KILL_STATE: float = 0.4
+
+# Minimum time in seconds between two damage actions
+CREATURE_KILL_COOLDOWN: float = 1.3
 
 # Minimum neuron value for a creature to reproduce with a partner
 CREATURE_MIN_REPRODUCTION_STATE: float = 0.1

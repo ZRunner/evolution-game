@@ -1,10 +1,10 @@
 from multiprocessing.pool import Pool
-from typing import Optional
 
 from . import config
 from .creature import Creature, creature_reproduction
 from .food import FoodGenerator, FoodPoint
 from .mp_utils import CreatureProcessMove, mp_execute_move
+from .utils import find_closest_entity
 
 
 class ContextManager:
@@ -48,24 +48,16 @@ class ContextManager:
 
     def get_food_distance_for_creature(self, creature: Creature):
         "Get the distance between a creature and its nearest food point"
-        best: Optional[float] = None
-        for food in self.foods:
-            # check if the point is within the vision circle
-            if best is None or food.position.distance_to(creature.pos) < min(creature.vision_distance, best):
-                # check if the point is within the vision cone
-                angle = abs(creature.direction.angle_to(food.position - creature.pos))
-                if angle > 180:
-                    angle = abs(360 - angle)
-                if angle <= creature.vision_angle/2:
-                    best = food.position.distance_to(creature.pos)
-        return best
+        if best := find_closest_entity(creature, self.foods):
+            return best[1]
+        return None
 
     def get_light_level_for_creature(self, creature: Creature):
         "Get the current light level at the position of a creature"
         value = 0.0
         for neighbor in self.creatures.values():
-            if neighbor.creature_id != creature.creature_id and neighbor.light_emission > 0.0 and creature.pos.distance_to(neighbor.pos) < neighbor.light_emission:
-                value += neighbor.light_emission - creature.pos.distance_to(neighbor.pos)
+            if neighbor.creature_id != creature.creature_id and neighbor.light_emission > 0.0 and creature.position.distance_to(neighbor.position) < neighbor.light_emission:
+                value += neighbor.light_emission - creature.position.distance_to(neighbor.position)
         return value
 
     def reproduce_creatures(self):
@@ -83,8 +75,8 @@ class ContextManager:
                     # create the child
                     child = creature_reproduction(creature1, creature2, self.highest_creature_id + 1, self.time)
                     # make it spawn between its parents
-                    child.pos.x = (creature1.pos.x + creature2.pos.x) / 2
-                    child.pos.y = (creature1.pos.y + creature2.pos.y) / 2
+                    child.position.x = (creature1.position.x + creature2.position.x) / 2
+                    child.position.y = (creature1.position.y + creature2.position.y) / 2
                     # add it to the list of newly born children
                     children.add(child)
                     # increment ID
@@ -105,7 +97,24 @@ class ContextManager:
             self.creatures[child.creature_id] = child
         if len(children_list):
             print(len(children_list), "new creatures born")
-    
+
+    def attack_creatures(self):
+        "If one creature is ready to attack, make it attack the nearest creature"
+        creatures = list(self.creatures.values())
+        for creature in creatures:
+            if creature.max_damage > 0 and creature.can_attack(self.time):
+                victim = find_closest_entity(creature, [
+                    c for c in creatures if c.creature_id != creature.creature_id
+                ])
+                if victim is not None:
+                    victim = victim[0]
+                    distance = 1 - creature.position.distance_to(victim.position)/creature.vision_distance
+                    damages = round(creature.max_damage * distance)
+                    if damages != 0:
+                        victim.receive_damages(damages)
+                        creature.last_damage_action = self.time
+                        victim.last_damage_received = self.time
+
     def move_creatures(self, pool: Pool, delta_t: int):
         arguments: list[tuple[CreatureProcessMove, int]] = []
         for creature in self.creatures.values():
