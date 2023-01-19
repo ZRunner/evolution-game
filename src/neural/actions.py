@@ -38,4 +38,4 @@ class ReadyToAttackActionNeuron(ActionNeuron):
     name = "Attack"
 
     def act(self, creature):
-        creature.ready_to_kill = self.value >= config.CREATURE_MIN_KILL_STATE
+        creature.ready_to_kill = self.value >= config.CREATURE_MIN_ATTACK_STATE

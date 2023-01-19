@@ -160,7 +160,7 @@ class Creature(Sprite):
         return self.network.has_neuron(ReadyForReproductionActionNeuron)
     
     def can_attack(self, timestamp: float):
-        return self.ready_to_kill and timestamp - self.last_damage_action > config.CREATURE_KILL_COOLDOWN
+        return self.ready_to_kill and timestamp - self.last_damage_action > config.CREATURE_ATTACK_COOLDOWN
     
     def has_attack_neuron(self):
         return self.network.has_neuron(ReadyToAttackActionNeuron)

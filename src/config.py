@@ -77,10 +77,10 @@ CREATURES_MAX_HIDDEN_NEURONS: int = 25
 CREATURE_MAX_LIGHT_DISTANCE_EMISSION: int = 200
 
 # Minimum neuron value for a creature to inflict damage
-CREATURE_MIN_KILL_STATE: float = 0.4
+CREATURE_MIN_ATTACK_STATE: float = 0.3
 
 # Minimum time in seconds between two damage actions
-CREATURE_KILL_COOLDOWN: float = 1.0
+CREATURE_ATTACK_COOLDOWN: float = 1.0
 
 # Minimum neuron value for a creature to reproduce with a partner
 CREATURE_MIN_REPRODUCTION_STATE: float = 0.1

@@ -39,7 +39,7 @@ class PanelsManager:
             "No (cooldown)" if creature.last_reproduction + config.CREATURE_REPRO_COOLDOWN > context.time else "No (disabled neuron)"
             )
         damage_label = "Yes" if creature.can_attack(context.time) else (
-            "No (cooldown)" if creature.last_damage_action + config.CREATURE_KILL_COOLDOWN > context.time else "No (disabled neuron)"
+            "No (cooldown)" if creature.last_damage_action + config.CREATURE_ATTACK_COOLDOWN > context.time else "No (disabled neuron)"
             )
         # Info
         texts = [
