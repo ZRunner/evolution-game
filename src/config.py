@@ -21,7 +21,13 @@ MEMORY_DEBUG: bool = False
 FRICTION: float = 0.8
 
 # Approximative Initial food quantities per generator
-INITIAL_FOOD_QUANTITY: int = 200
+INITIAL_FOOD_QUANTITY: int = 500
+
+# Duration in seconds between each food generation
+FOOD_GENERATION_INTERVAL: int = 35
+
+# Maximum food quantity per generation
+MAX_FOOD_GENERATED_PER_CYCLE: int = 100
 
 # Creatures count at the beginning
 INITIAL_CREATURES_COUNT: int = 200
@@ -74,7 +80,7 @@ CREATURE_MAX_LIGHT_DISTANCE_EMISSION: int = 200
 CREATURE_MIN_KILL_STATE: float = 0.4
 
 # Minimum time in seconds between two damage actions
-CREATURE_KILL_COOLDOWN: float = 1.3
+CREATURE_KILL_COOLDOWN: float = 1.0
 
 # Minimum neuron value for a creature to reproduce with a partner
 CREATURE_MIN_REPRODUCTION_STATE: float = 0.1

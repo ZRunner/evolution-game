@@ -62,8 +62,7 @@ def main():
     panels = PanelsManager(window_surface)
 
     # generate food
-    for _ in range(config.INITIAL_FOOD_QUANTITY):
-        context.generate_food()
+    context.generate_initial_food()
 
     # launch events
     for event_type, frequency in events.items():

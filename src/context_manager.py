@@ -32,11 +32,19 @@ class ContextManager:
         if to_die:
             print(len(to_die), "creature(s) died")
     
+    def generate_initial_food(self):
+        "Generate initial food points"
+        for generator in self.food_generators:
+            for _ in range(config.INITIAL_FOOD_QUANTITY):
+                if food := generator.tick():
+                    self.foods.append(food)
+    
     def generate_food(self):
         "Generate food points around food generators"
         for generator in self.food_generators:
-            if food := generator.tick():
-                self.foods.append(food)
+            for _ in range(config.MAX_FOOD_GENERATED_PER_CYCLE):
+                if food := generator.tick():
+                    self.foods.append(food)
 
     def detect_creature_eating(self, creature: Creature):
         "Detect if a creature is eating a point, and make it happens"
