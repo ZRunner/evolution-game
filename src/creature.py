@@ -145,7 +145,7 @@ class Creature(Sprite):
         self.birth = timestamp
         self.last_reproduction = timestamp
         self.last_damage_action = timestamp
-        self.last_damage_received = 0
+        self.last_damage_received = 0.0
         # some vectors
         self.position = Vector2(self.rectangle.center)
         self.direction = Vector2(random(), random()).normalize()
