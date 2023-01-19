@@ -33,9 +33,9 @@ class ReadyForReproductionActionNeuron(ActionNeuron):
     def act(self, creature):
         creature.ready_for_reproduction = self.value >= config.CREATURE_MIN_REPRODUCTION_STATE
 
-class ReadyToKillActionNeuron(ActionNeuron):
+class ReadyToAttackActionNeuron(ActionNeuron):
     "Boolean telling if the creature is ready to inflict damage"
-    name = "Kill"
+    name = "Attack"
 
     def act(self, creature):
         creature.ready_to_kill = self.value >= config.CREATURE_MIN_KILL_STATE
