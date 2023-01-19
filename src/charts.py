@@ -183,7 +183,7 @@ class ChartsManager:
             generations = [creature.generation for creature in creatures]
             self.datas["generations"].append_value(ts, sum(generations)/len(generations))
             # Number of potential killers
-            killers = [creature for creature in creatures if creature.can_attack(ts)]
+            killers = [creature for creature in creatures if creature.has_attack_neuron()]
             self.datas["killers_percent"].append_value(ts, len(killers) / len(creatures))
         elif self.datas["creatures_count"].data[-2] > 0:
             self.datas["creatures_count"].append_value(ts, len(creatures))

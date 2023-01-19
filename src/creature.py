@@ -1,6 +1,6 @@
-from math import radians
 import time
-from random import gauss, randint, random, randrange, uniform, choice
+from math import radians
+from random import choice, gauss, randint, random, randrange, uniform
 from typing import TYPE_CHECKING, Optional, TypedDict
 
 from pygame import Color, draw
@@ -13,6 +13,8 @@ from src.gradients import draw_circle_gradient
 
 from . import config
 from .neural import NeuralNetwork
+from .neural.actions import (ReadyForReproductionActionNeuron,
+                             ReadyToAttackActionNeuron)
 
 if TYPE_CHECKING:
     from context_manager import ContextManager
@@ -153,9 +155,15 @@ class Creature(Sprite):
 
     def can_repro(self, timestamp: float):
         return self.ready_for_reproduction and timestamp - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
+
+    def has_reproduction_neuron(self):
+        return self.network.has_neuron(ReadyForReproductionActionNeuron)
     
     def can_attack(self, timestamp: float):
         return self.ready_to_kill and timestamp - self.last_damage_action > config.CREATURE_KILL_COOLDOWN
+    
+    def has_attack_neuron(self):
+        return self.network.has_neuron(ReadyToAttackActionNeuron)
 
     def calcul_color(self) -> Color:
         "Calcul the creature color based on its specs"
@@ -268,7 +276,7 @@ class Creature(Sprite):
 
     def draw_direction(self, surface: Surface):
         "Draw a line representing the entity direction"
-        if self.velocity > 1e-5:
+        if abs(self.velocity) > 1e-5:
             draw.line(surface, "red", self.position, self.position + self.direction * abs(self.velocity) * 1000, width=1)
 
     def draw(self, surface: Surface, is_selected: bool=False):

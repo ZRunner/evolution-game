@@ -34,7 +34,7 @@ ACTION_NEURONS = [
     actions.RotateActionNeuron(),
     actions.EmitLightActionNeuron(),
     actions.ReadyForReproductionActionNeuron(),
-    actions.ReadyToKillActionNeuron(),
+    actions.ReadyToAttackActionNeuron(),
 ]
 
 AnyNeuron = Union[InputNeuron, TransitionNeuron]
@@ -280,6 +280,14 @@ class NeuralNetwork:
     def connections_from(self, neuron: AnyNeuron):
         "Return the list of connections starting from the given neuron"
         return [wire for wire in self.wires if wire[0] == neuron]
+
+    def has_neuron(self, neuron_type: type[AnyNeuron]):
+        "Check if the network has a specific type of neuron"
+        for n1, _, n2 in self.wires:
+            for n in (n1, n2):
+                if isinstance(n, neuron_type):
+                    return True
+        return False
     
     def get_action_value(self, name: str) -> Optional[float]:
         "Get the value of an action neuron by its name"
