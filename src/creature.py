@@ -116,9 +116,9 @@ class Creature(Sprite):
             )
             self.max_life = 8 + randrange(self.size * 10)
             self.life_regen_cost = round(self.size * randint(1, 5)) + 1
-            self.digestion_efficiency = round(random() * 1.8 + 0.2, 2)
-            self.digestion_speed = round(random() * 4 + 0.8, 1)
-            self.vision_distance = round(random() * 124 + 1)
+            self.digestion_efficiency = round(random() * 1.6 + 0.2, 2) # between 0.2 and 1.8
+            self.digestion_speed = round(random() * 4 + 0.8, 1) # between 0.8 and 4.8
+            self.vision_distance = round(random() * 124 + 1) # between 1 and 125
             self.vision_angle = randint(10, 200)
             self.max_damage = round(gauss(
                 config.CREATURE_DMG_AVG, config.CREATURE_DMG_SIGMA
