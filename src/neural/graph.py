@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import pygame
 import pylab
-from pygame.font import SysFont
+from pygame.font import Font
 from pygame.surface import Surface
 
 
@@ -17,7 +17,6 @@ class NeuralNetworkGraph:
 
     def __init__(self):
         self.graph = nx.DiGraph()
-        self.font = SysFont("Arial", 13)
         self.canvas_size: tuple[int, int]
         self.raw_data: Optional[memoryview] = None
         self.pos: Optional[dict] = None
@@ -100,7 +99,7 @@ class NeuralNetworkGraph:
         self.viewLim = ax.viewLim.intervalx, ax.viewLim.intervaly
         plt.close(fig)
 
-    def draw(self, surface: Surface):
+    def draw(self, surface: Surface, tooltip_font: Font):
         "Draw the graph"
         if len(self.graph.nodes) == 0:
             return
@@ -112,9 +111,9 @@ class NeuralNetworkGraph:
         surf = pygame.image.frombuffer(self.raw_data, size, "RGBA")
         s_width, s_height = surface.get_size()
         surface.blit(surf, (s_width - size[0], s_height - size[1] - 20))
-        self.detect_tooltip(surface)
+        self.detect_tooltip(surface, tooltip_font)
 
-    def detect_tooltip(self, surface: Surface):
+    def detect_tooltip(self, surface: Surface, font: Font):
         "Draw tooltips over the graph is mouse is over a neuron"
         if self.viewLim is None or self.pos is None:
             return
@@ -141,9 +140,9 @@ class NeuralNetworkGraph:
             # reverse Y axis
             p[1] = p[1] * -1 + canvas_height
             if abs(mouse_rel_x - p[0]) < 10 and abs(mouse_rel_y - p[1]) < 10:
-                self.draw_tooltip(surface, name)
+                self.draw_tooltip(surface, font, name)
     
-    def draw_tooltip(self, surface: Surface, name: str):
+    def draw_tooltip(self, surface: Surface, font: Font, name: str):
         "Actually draw a tooltip where needed"
         raw_value = self.neurons_map[name].value
         title_label = name
@@ -154,10 +153,10 @@ class NeuralNetworkGraph:
         # mouse position
         mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
         # render neuron name
-        label = self.font.render(title_label, True, pygame.Color("WHITE"), pygame.Color("#262626"))
-        label_width, _ = self.font.size(title_label)
+        label = font.render(title_label, True, pygame.Color("WHITE"), pygame.Color("#262626"))
+        label_width, _ = font.size(title_label)
         surface.blit(label, (mouse_pos_x - label_width/2, mouse_pos_y - 30))
         # render neuron value
-        value = self.font.render(value_label, True, pygame.Color("WHITE"), pygame.Color("#262626"))
-        value_width, _ = self.font.size(value_label)
+        value = font.render(value_label, True, pygame.Color("WHITE"), pygame.Color("#262626"))
+        value_width, _ = font.size(value_label)
         surface.blit(value, (mouse_pos_x - value_width/2, mouse_pos_y - 15))

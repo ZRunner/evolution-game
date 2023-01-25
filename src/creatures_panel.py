@@ -13,7 +13,8 @@ class PanelsManager:
     def __init__(self, surface: Surface):
         self.surface = surface
         self.title_font = SysFont("Arial", 14)
-        self.font = SysFont("Arial", 12)
+        self.text_font = SysFont("Arial", 12)
+        self.tooltip_font = SysFont("Arial", 13)
 
         win_x, win_y = surface.get_size()
         self.surf = Surface((300, win_y))
@@ -48,7 +49,7 @@ class PanelsManager:
             f"Age: {context.time - creature.birth:.0f}s",
             f"Position: ({creature.position.x:.0f}, {creature.position.y:.0f})",
             f"Speed: {creature.velocity*1000:.1f}p/s",
-            f"Acceleration: {creature.acceleration*1000:.1f}p/s²",
+            f"Acceleration: {creature.acceleration*1000:.2f}p/s²",
             f"Direction: {creature.direction.as_polar()[1]:.0f}° ({creature.direction.x:.3f}, {creature.direction.y:.3f})",
             f"Life: {creature.life} / {creature.max_life} (regen cost: {creature.life_regen_cost})",
             f"Energy: {creature.energy:.1f}",
@@ -60,7 +61,7 @@ class PanelsManager:
             f"Ready to inflict damage: {damage_label}",
         ]
         for i, text in enumerate(texts):
-            render = self.font.render(text, True, "white")
+            render = self.text_font.render(text, True, "white")
             self.surface.blit(render, Vector2(self.rect.topleft) + Vector2(20, 60 + 20*i))
         # Neural network
-        creature.network.graph.draw(self.surface)
+        creature.network.graph.draw(self.surface, self.tooltip_font)
