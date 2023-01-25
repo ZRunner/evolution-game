@@ -42,7 +42,7 @@ CREATURE_STARTING_ENERGY: int = 30
 CREATURE_MIN_STARTING_DIGESTING_POINTS: int = 6
 
 # Maximum creature acceleration (on each axis)
-MAX_CREATURE_ACC: float = 0.0001
+MAX_CREATURE_ACC: float = 0.0002
 
 # Maximum creature veolocity (on each axis)
 MAX_CREATURE_VEL: float = 0.08
