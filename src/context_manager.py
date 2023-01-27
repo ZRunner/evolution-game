@@ -41,10 +41,16 @@ class ContextManager:
     
     def generate_food(self):
         "Generate food points around food generators"
+        max_to_generate = min(
+            config.MAX_FOOD_GENERATED_PER_CYCLE,
+            round((config.MAX_FOOD_QUANTITY - len(self.foods)) / len(self.food_generators) * 1.5)
+        )
         for generator in self.food_generators:
-            for _ in range(config.MAX_FOOD_GENERATED_PER_CYCLE):
+            for _ in range(max_to_generate):
                 if food := generator.tick():
                     self.foods.append(food)
+                if len(self.foods) >= config.MAX_FOOD_QUANTITY:
+                    return
 
     def detect_creature_eating(self, creature: Creature):
         "Detect if a creature is eating a point, and make it happens"

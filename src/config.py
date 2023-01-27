@@ -29,6 +29,9 @@ FOOD_GENERATION_INTERVAL: int = 35
 # Maximum food quantity per generation
 MAX_FOOD_GENERATED_PER_CYCLE: int = 100
 
+# Maximum food quantity at any time
+MAX_FOOD_QUANTITY: int = 1000
+
 # Creatures count at the beginning
 INITIAL_CREATURES_COUNT: int = 200
 
