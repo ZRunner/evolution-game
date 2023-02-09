@@ -55,6 +55,9 @@ class ContextManager:
     def detect_creature_eating(self, creature: Creature):
         "Detect if a creature is eating a point, and make it happens"
         for food in self.foods:
+            if creature.energy > creature.max_energy:
+                creature.energy = creature.max_energy
+                break
             if creature.rectangle.colliderect(food.rectangle):
                 creature.eat(food)
                 self.foods.remove(food)
@@ -110,7 +113,7 @@ class ContextManager:
         for child in children_list:
             self.creatures[child.creature_id] = child
         if len(children_list):
-            print(len(children_list), "new creatures born")
+            print(len(children_list), "new creature(s) born")
 
     def attack_creatures(self):
         "If one creature is ready to attack, make it attack the nearest creature"

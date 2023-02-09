@@ -41,6 +41,9 @@ MAX_CREATURES_COUNT: int = 1000
 # Energy points each creature has at the beginning of the game
 CREATURE_STARTING_ENERGY: int = 30
 
+# Coefficient to determine the maximum energy that a creature has based on size
+CREATURE_MAX_ENERGY_COEFFICIENT: float = 50.0
+
 # Minimum food ready to be digested at the beginning
 CREATURE_MIN_STARTING_DIGESTING_POINTS: int = 6
 
