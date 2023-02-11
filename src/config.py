@@ -74,7 +74,7 @@ CREATURE_DMG_SIGMA: int = 2
 CREATURES_MIN_CONNECTIONS: int = 2
 
 # Maximum connections number in a creature neural network
-CREATURES_MAX_CONNECTIONS: int = 12
+CREATURES_MAX_CONNECTIONS: int = 15
 
 # Maximum transitions ("hidden") neurons in a creature neural network
 CREATURES_MAX_HIDDEN_NEURONS: int = 25
