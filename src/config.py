@@ -42,7 +42,7 @@ MAX_CREATURES_COUNT: int = 1000
 CREATURE_STARTING_ENERGY: int = 30
 
 # Coefficient to determine the maximum energy that a creature has based on size
-CREATURE_MAX_ENERGY_COEFFICIENT: float = 50.0
+CREATURE_MAX_ENERGY_COEFFICIENT: int = 30
 
 # Minimum food ready to be digested at the beginning
 CREATURE_MIN_STARTING_DIGESTING_POINTS: int = 6
