@@ -36,12 +36,23 @@ class PanelsManager:
         text = self.title_font.render(f"Creature #{creature.creature_id}", True, "white")
         self.surface.blit(text, Vector2(self.rect.topleft) + Vector2(100, 25))
         # reproduction state
-        repr_label = "Yes" if creature.can_repro(context.time) else (
-            "No (cooldown)" if creature.last_reproduction + config.CREATURE_REPRO_COOLDOWN > context.time else "No (disabled neuron)"
-            )
-        damage_label = "Yes" if creature.can_attack(context.time) else (
-            "No (cooldown)" if creature.last_damage_action + config.CREATURE_ATTACK_COOLDOWN > context.time else "No (disabled neuron)"
-            )
+        if creature.can_repro(context.time):
+            repr_label = "Yes"
+        elif creature.last_reproduction + config.CREATURE_REPRO_COOLDOWN > context.time:
+            repr_label = "No (cooldown)"
+        elif creature.has_reproduction_neuron():
+            repr_label = "No (disabled neuron)"
+        else:
+            repr_label = "No (no neuron)"
+        # damage state
+        if creature.can_attack(context.time):
+            damage_label = "Yes"
+        elif creature.last_damage_action + config.CREATURE_ATTACK_COOLDOWN > context.time:
+            damage_label = "No (cooldown)"
+        elif creature.has_attack_neuron():
+            damage_label = "No (disabled neuron)"
+        else:
+            damage_label = "No (no neuron)"
         # Info
         texts = [
             f"Generation {creature.generation}",
