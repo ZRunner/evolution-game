@@ -159,20 +159,20 @@ class Creature(Sprite):
 
     def has_reproduction_neuron(self):
         return self.network.has_neuron(ReadyForReproductionActionNeuron)
-    
+
     def can_attack(self, timestamp: float):
         return self.ready_to_kill and timestamp - self.last_damage_action > config.CREATURE_ATTACK_COOLDOWN
-    
+
     def has_attack_neuron(self):
         return self.network.has_neuron(ReadyToAttackActionNeuron)
 
     def calcul_color(self) -> Color:
         "Calcul the creature color based on its specs"
-        life = min(255, 255 * self.max_life / 130)
-        neurons_count = min(255, 255 * self.network.neurons_count / (config.CREATURES_MAX_CONNECTIONS + 5))
-        third = 255
-        return Color(f'#{int(life):02X}{int(neurons_count):02X}{third:02X}')
-    
+        life = min(255, 225 * self.max_life / 130 + 30)
+        neurons_count = min(255, 30 + 225 * self.network.neurons_count / (config.CREATURES_MAX_CONNECTIONS + 5))
+        has_attack = 220 if self.has_attack_neuron() else 90
+        return Color(f'#{int(has_attack):02X}{int(life):02X}{int(neurons_count):02X}')
+
     def update_network(self, context: "ContextManager"):
         self.network.update_input(self, context)
         self.network.tick()
