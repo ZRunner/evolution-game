@@ -1,4 +1,6 @@
+import math
 from multiprocessing.pool import Pool
+from typing import Optional, TypeVar
 
 import pygame
 
@@ -6,8 +8,8 @@ from . import config
 from .creature import Creature, creature_reproduction
 from .food import FoodGenerator, FoodPoint
 from .mp_utils import CreatureProcessMove, mp_execute_move
-from .utils import find_closest_entity
 
+T = TypeVar("T", Creature, FoodPoint)
 
 class ContextManager:
 
@@ -50,6 +52,76 @@ class ContextManager:
         for creature in self.creatures.values():
             grid_cell = self.get_grid_cell(creature.position)
             self.creatures_grid[grid_cell].append(creature)
+    
+    def find_visible_creatures(self, creature: Creature):
+        "Find the closest entity from a list of entities"
+        entities: set[Creature] = set()
+
+        # Iterate over neighboring cells within the creature's vision range
+        left_index = int((creature.position.x - creature.vision_distance) // self.grid_cell_size)
+        right_index = int((creature.position.x + creature.vision_distance) // self.grid_cell_size)
+        top_index = int((creature.position.y - creature.vision_distance) // self.grid_cell_size)
+        bottom_index = int((creature.position.y + creature.vision_distance) // self.grid_cell_size)
+        for cell_x in range(left_index, right_index + 1):
+            for cell_y in range(top_index, bottom_index + 1):
+                cell_x %= self.grid_size[0]
+                cell_y %= self.grid_size[1]
+
+                # Iterate over entities in the cell
+                for entity in self.creatures_grid[cell_x, cell_y]:
+                    if isinstance(entity, Creature) and entity.creature_id == creature.creature_id:
+                        continue
+                    # Check if the other entity is within the vision angle
+                    # TODO: the angle check doesn't take into account the toroidal grid
+                    #  and will not validate an entity at the other side of the map
+                    to_other_entity = entity.position - creature.position
+                    angle = creature.direction.angle_to(to_other_entity)
+                    if abs(angle) <= creature.vision_angle / 2:
+                        # Compute distance (toroidal)
+                        dx = abs(entity.position.x - creature.position.x) % config.WIDTH
+                        dy = abs(entity.position.y - creature.position.y) % config.HEIGHT
+                        distance = math.sqrt(dx ** 2 + dy ** 2)
+                        if distance <= creature.vision_distance:
+                            # Update closest entity
+                            entities.add(entity)
+        
+        return entities
+    
+    def find_closest_entity(self, creature: Creature, entities_grid: dict[tuple[int, int], list[T]]):
+        "Find the closest entity from a list of entities"
+        min_distance = float('inf')
+        closest_entity: Optional[T] = None
+
+        # Iterate over neighboring cells within the creature's vision range
+        left_index = int((creature.position.x - creature.vision_distance) // self.grid_cell_size)
+        right_index = int((creature.position.x + creature.vision_distance) // self.grid_cell_size)
+        top_index = int((creature.position.y - creature.vision_distance) // self.grid_cell_size)
+        bottom_index = int((creature.position.y + creature.vision_distance) // self.grid_cell_size)
+        for cell_x in range(left_index, right_index + 1):
+            for cell_y in range(top_index, bottom_index + 1):
+                cell_x %= self.grid_size[0]
+                cell_y %= self.grid_size[1]
+
+                # Iterate over entities in the cell
+                for entity in entities_grid[cell_x, cell_y]:
+                    if isinstance(entity, Creature) and entity.creature_id == creature.creature_id:
+                        continue
+                    # Check if the other entity is within the vision angle
+                    # TODO: the angle check doesn't take into account the toroidal grid
+                    #  and will not validate an entity at the other side of the map
+                    to_other_entity = entity.position - creature.position
+                    angle = creature.direction.angle_to(to_other_entity)
+                    if abs(angle) <= creature.vision_angle / 2:
+                        # Compute distance (toroidal)
+                        dx = abs(entity.position.x - creature.position.x) % config.WIDTH
+                        dy = abs(entity.position.y - creature.position.y) % config.HEIGHT
+                        distance = math.sqrt(dx ** 2 + dy ** 2)
+                        if distance <= min(min_distance, creature.vision_distance):
+                            # Update closest entity
+                            min_distance = distance
+                            closest_entity = entity
+        
+        return closest_entity, min_distance
 
     def update_creatures_energies(self):
         "Update creatures energies and life, and remove killed ones"
@@ -102,14 +174,11 @@ class ContextManager:
                     if creature.rectangle.colliderect(food.rectangle):
                         creature.eat(food)
                         self.foods_grid[cell].remove(food)
-        
 
     def get_food_distance_for_creature(self, creature: Creature):
         "Get the distance between a creature and its nearest food point"
-        # TODO
-        # if best := find_closest_entity(creature, self.foods):
-        #     return best[1]
-        return None
+        best, distance = self.find_closest_entity(creature, self.foods_grid)
+        return distance if best else None
 
     def get_light_level_for_creature(self, creature: Creature):
         "Get the current light level at the position of a creature"
@@ -162,11 +231,8 @@ class ContextManager:
         creatures = list(self.creatures.values())
         for creature in creatures:
             if creature.max_damage > 0 and creature.can_attack(self.time):
-                victim = find_closest_entity(creature, [
-                    c for c in creatures if c.creature_id != creature.creature_id
-                ])
+                victim, _ = self.find_closest_entity(creature, self.creatures_grid)
                 if victim is not None:
-                    victim = victim[0]
                     distance = 1 - creature.position.distance_to(victim.position)/creature.vision_distance
                     damages = round(creature.max_damage * distance)
                     if damages != 0:
