@@ -17,6 +17,9 @@ GAME_SPEED: float = 1.0
 # RAM debug mode
 MEMORY_DEBUG: bool = False
 
+# Show the map grid (for debug purposes)
+SHOW_GRID: bool = False
+
 # Friction coefficient used in acceleration calculs
 FRICTION: float = 0.9
 

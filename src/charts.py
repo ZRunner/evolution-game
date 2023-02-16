@@ -175,7 +175,7 @@ class ChartsManager:
             vision_angles = [creature.vision_angle for creature in creatures]
             self.datas["avg_vision_angle"].append_value(ts, sum(vision_angles)/len(vision_angles))
             # Total Food Value
-            food = sum(point.quantity for point in context.foods)
+            food = sum(food.quantity for food_list in context.foods_grid.values() for food in food_list)
             self.datas["foods_total"].append_value(ts, food)
             # Average light emitted
             lights_e = [creature.light_emission for creature in creatures]

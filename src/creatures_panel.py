@@ -53,12 +53,13 @@ class PanelsManager:
             damage_label = "No (disabled neuron)"
         else:
             damage_label = "No (no neuron)"
+        grid_position = [pos for pos, creatures in context.creatures_grid.items() if creature in creatures][0]
         # Info
         texts = [
             f"Generation {creature.generation}",
             f"Size: {creature.size}",
             f"Age: {context.time - creature.birth:.0f}s",
-            f"Position: ({creature.position.x:.0f}, {creature.position.y:.0f})",
+            f"Position: ({creature.position.x:.0f}, {creature.position.y:.0f}) - Grid cell: {grid_position}",
             f"Speed: {creature.velocity*1000:.1f}p/s",
             f"Acceleration: {creature.acceleration*1000:.2f}p/s²",
             f"Direction: {creature.direction.as_polar()[1]:.0f}° ({creature.direction.x:.3f}, {creature.direction.y:.3f})",

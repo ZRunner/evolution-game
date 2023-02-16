@@ -118,23 +118,31 @@ def main():
             # draw lights
             for entity in context.creatures.values():
                 entity.draw_light_circle(window_surface)
+            
+            # draw the grid
+            if config.SHOW_GRID:
+                context.draw_grid(window_surface)
 
 
             if not is_pause:
                 context.move_creatures(pool, delta_t)
+                context.update_creatures_grid()
                 context.time += delta_t / 1000
 
             for entity in context.creatures.values():
                 if not is_pause:
+                    # make the creature eat
                     context.detect_creature_eating(entity)
+                # draw the creature (with special esthetic if it's selected)
                 is_selected = entity.creature_id == selected_creature_id
                 entity.draw(window_surface, is_selected=is_selected)
 
             for generator in context.food_generators:
                 generator.draw(window_surface)
 
-            for food_point in context.foods:
-                food_point.draw(window_surface)
+            for food_list in context.foods_grid.values():
+                for food_point in food_list:
+                    food_point.draw(window_surface)
 
             display_fps(window_surface, font, clock)
             display_elapsed_time(window_surface, font, context.time)

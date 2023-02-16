@@ -1,5 +1,7 @@
 from multiprocessing.pool import Pool
 
+import pygame
+
 from . import config
 from .creature import Creature, creature_reproduction
 from .food import FoodGenerator, FoodPoint
@@ -10,6 +12,7 @@ from .utils import find_closest_entity
 class ContextManager:
 
     def __init__(self):
+        self.time = 0.0
         self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.INITIAL_CREATURES_COUNT)}
         self.highest_creature_id = config.INITIAL_CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
@@ -17,9 +20,37 @@ class ContextManager:
             FoodGenerator(None, 80, 0.5),
             FoodGenerator(None, 40, 0.3),
         ]
-        self.foods: list[FoodPoint] = []
-        self.time = 0.0
+        self.grid_cell_size = 50
+        self.grid_size = (config.WIDTH // self.grid_cell_size, config.HEIGHT // self.grid_cell_size)
+        self.foods_grid: dict[tuple[int, int], list[FoodPoint]] = {
+            (x, y): [] for x in range(self.grid_size[0]) for y in range(self.grid_size[1])
+        }
+        self.creatures_grid: dict[tuple[int, int], list[Creature]] = {
+            (x, y): [] for x in range(self.grid_size[0]) for y in range(self.grid_size[1])
+        }
     
+    def get_grid_cell(self, position: pygame.Vector2) -> tuple[int, int]:
+        "Return the grid cell of a position"
+        grid_x = int(position.x) // self.grid_cell_size % self.grid_size[0]
+        grid_y = int(position.y) // self.grid_cell_size % self.grid_size[1]
+        return grid_x, grid_y
+
+    def draw_grid(self, screen: pygame.Surface):
+        "Draw a grid on the screen"
+        color = (100, 150, 180)
+        for x in range(self.grid_cell_size, config.WIDTH, self.grid_cell_size):
+            pygame.draw.line(screen, color, (x, 0), (x, config.HEIGHT))
+        for y in range(self.grid_cell_size, config.HEIGHT, self.grid_cell_size):
+            pygame.draw.line(screen, color, (0, y), (config.WIDTH, y))
+    
+    def update_creatures_grid(self):
+        "update the creatures grid map based on each creature position"
+        for creatures_list in self.creatures_grid.values():
+            creatures_list.clear()
+        for creature in self.creatures.values():
+            grid_cell = self.get_grid_cell(creature.position)
+            self.creatures_grid[grid_cell].append(creature)
+
     def update_creatures_energies(self):
         "Update creatures energies and life, and remove killed ones"
         to_die: list[int] = []
@@ -37,36 +68,47 @@ class ContextManager:
         for generator in self.food_generators:
             for _ in range(config.INITIAL_FOOD_QUANTITY):
                 if food := generator.tick():
-                    self.foods.append(food)
+                    grid_cell = self.get_grid_cell(food.position)
+                    self.foods_grid[grid_cell].append(food)
     
     def generate_food(self):
         "Generate food points around food generators"
+        existing_food_count = sum(len(foods) for foods in self.foods_grid.values())
         max_to_generate = min(
             config.MAX_FOOD_GENERATED_PER_CYCLE,
-            round((config.MAX_FOOD_QUANTITY - len(self.foods)) / len(self.food_generators) * 1.5)
+            round((config.MAX_FOOD_QUANTITY - existing_food_count) / len(self.food_generators) * 1.5)
         )
         for generator in self.food_generators:
             for _ in range(max_to_generate):
                 if food := generator.tick():
-                    self.foods.append(food)
-                if len(self.foods) >= config.MAX_FOOD_QUANTITY:
+                    grid_cell = self.get_grid_cell(food.position)
+                    self.foods_grid[grid_cell].append(food)
+                    existing_food_count += 1
+                if existing_food_count >= config.MAX_FOOD_QUANTITY:
                     return
 
     def detect_creature_eating(self, creature: Creature):
         "Detect if a creature is eating a point, and make it happens"
-        for food in self.foods:
-            if creature.energy > creature.max_energy:
-                creature.energy = creature.max_energy
-                break
-            if creature.rectangle.colliderect(food.rectangle):
-                creature.eat(food)
-                self.foods.remove(food)
-                break
+        cell_x, cell_y = self.get_grid_cell(creature.position)
+        # check the cell containing the creature AND the cells around it
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                cell = (cell_x + dx) % self.grid_size[0], (cell_y + dy) % self.grid_size[1]
+                for food in self.foods_grid[cell]:
+                    # if the creature reached its energy limit, stop the loop
+                    if creature.energy > creature.max_energy:
+                        creature.energy = creature.max_energy
+                        return
+                    if creature.rectangle.colliderect(food.rectangle):
+                        creature.eat(food)
+                        self.foods_grid[cell].remove(food)
+        
 
     def get_food_distance_for_creature(self, creature: Creature):
         "Get the distance between a creature and its nearest food point"
-        if best := find_closest_entity(creature, self.foods):
-            return best[1]
+        # TODO
+        # if best := find_closest_entity(creature, self.foods):
+        #     return best[1]
         return None
 
     def get_light_level_for_creature(self, creature: Creature):
