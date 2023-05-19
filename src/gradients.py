@@ -6,7 +6,7 @@ from pygame.surface import Surface
 from pygame.draw import circle
 
 def draw_circle_gradient(surface: Surface, center: Vector2, radius: int, color: Color):
-    "Draw a gradient circle"
+    "Draw a gradient circle, where the center is at full opacity and the edges are transparent"
     subsurface = Surface((radius*2, radius*2), SRCALPHA)
     first_alpha = color.a
     alpha_step = first_alpha / radius
