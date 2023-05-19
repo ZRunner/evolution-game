@@ -11,7 +11,7 @@ def draw_circle_gradient(surface: Surface, center: Vector2, radius: int, color: 
     first_alpha = color.a
     alpha_step = first_alpha / radius
     circle_color = Color(color.r, color.g, color.b, 255)
-    for i in range(0, radius, 1):
+    for i in range(3, radius, 2):
         circle_color.a = ceil(first_alpha - alpha_step * i)
         circle(subsurface, circle_color, Vector2(radius, radius), i, width=1)
     surface.blit(subsurface, center - Vector2(radius, radius))
