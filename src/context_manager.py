@@ -87,7 +87,7 @@ class ContextManager:
         
         return entities
     
-    def find_closest_entity(self, creature: Creature, entities_grid: dict[tuple[int, int], list[T]]):
+    def find_closest_entity(self, creature: Creature, entities_grid: dict[tuple[int, int], list[T]]) -> tuple[Optional[T], float]:
         "Find the closest entity from a list of entities"
         min_distance = float('inf')
         closest_entity: Optional[T] = None
