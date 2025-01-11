@@ -272,7 +272,6 @@ class Creature(Sprite):
                 surface,
                 Vector2(self.rectangle.center),
                 round(self.light_emission),
-                Color(255, 230, 100, min(255, int(self.light_emission)))
                 )
 
     def draw_direction(self, surface: Surface):

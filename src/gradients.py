@@ -1,17 +1,17 @@
-from math import ceil
-from pygame import SRCALPHA
-from pygame.color import Color
+from pygame import transform
+from pygame.image import load as image_load
 from pygame.math import Vector2
 from pygame.surface import Surface
-from pygame.draw import circle
 
-def draw_circle_gradient(surface: Surface, center: Vector2, radius: int, color: Color):
+circle_img = image_load('src/lens_circle.png')
+circle_scales_cache: dict[int, Surface] = {}
+
+def _get_image_from_scale(radius: int):
+    if radius not in circle_scales_cache:
+        circle_scales_cache[radius] = transform.scale(circle_img, (radius*2, radius*2))
+    return circle_scales_cache[radius]
+
+def draw_circle_gradient(surface: Surface, center: Vector2, radius: int):
     "Draw a gradient circle, where the center is at full opacity and the edges are transparent"
-    subsurface = Surface((radius*2, radius*2), SRCALPHA)
-    first_alpha = color.a
-    alpha_step = first_alpha / radius
-    circle_color = Color(color.r, color.g, color.b, 255)
-    for i in range(3, radius, 2):
-        circle_color.a = ceil(first_alpha - alpha_step * i)
-        circle(subsurface, circle_color, Vector2(radius, radius), i, width=1)
-    surface.blit(subsurface, center - Vector2(radius, radius))
+    scaled_circle = _get_image_from_scale(radius)
+    surface.blit(scaled_circle, center - Vector2(radius, radius))
