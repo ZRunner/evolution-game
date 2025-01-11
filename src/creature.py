@@ -47,14 +47,33 @@ class DamageDisplayer:
         surface.blit(self.surface, rectangle)
 
 
-def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id: int, timestamp: float) -> "Creature":
+def creature_reproduction(
+        parent1: "Creature", parent2: "Creature", creature_id: int, timestamp: float) -> "Creature":
     "Use some random algorithms to merge two creatures into a new 'child'"
-    size = randint(min(parent1.size, parent2.size), max(parent1.size, parent2.size))
-    max_life = randint(min(parent1.max_life, parent2.max_life), max(parent1.max_life, parent2.max_life))
-    life_regen_cost = randint(min(parent1.life_regen_cost, parent2.life_regen_cost), max(parent1.life_regen_cost, parent2.life_regen_cost))
-    digestion_efficiency = uniform(min(parent1.digestion_efficiency, parent2.digestion_efficiency), max(parent1.digestion_efficiency, parent2.digestion_efficiency))
-    digestion_speed = uniform(min(parent1.digestion_speed, parent2.digestion_speed), max(parent1.digestion_speed, parent2.digestion_speed))
-    vision_distance = randint(min(parent1.vision_distance, parent2.vision_distance), max(parent1.vision_distance, parent2.vision_distance))
+    size = randint(
+        min(parent1.size, parent2.size),
+        max(parent1.size, parent2.size)
+    )
+    max_life = randint(
+        min(parent1.max_life, parent2.max_life),
+        max(parent1.max_life, parent2.max_life)
+    )
+    life_regen_cost = randint(
+        min(parent1.life_regen_cost, parent2.life_regen_cost),
+        max(parent1.life_regen_cost, parent2.life_regen_cost)
+    )
+    digestion_efficiency = uniform(
+        min(parent1.digestion_efficiency, parent2.digestion_efficiency),
+        max(parent1.digestion_efficiency, parent2.digestion_efficiency)
+    )
+    digestion_speed = uniform(
+        min(parent1.digestion_speed, parent2.digestion_speed),
+        max(parent1.digestion_speed, parent2.digestion_speed)
+    )
+    vision_distance = randint(
+        min(parent1.vision_distance, parent2.vision_distance),
+        max(parent1.vision_distance, parent2.vision_distance)
+    )
     vision_angle = choice([parent1.vision_angle, parent2.vision_angle])
     max_damage = choice([parent1.max_damage, parent2.max_damage])
     generation = max(parent1.generation, parent2.generation) + 1
@@ -77,6 +96,7 @@ def creature_reproduction(parent1: "Creature", parent2: "Creature", creature_id:
 
 
 class CreatureGeneratedAttributes(TypedDict):
+    "Attributes randomly generated for a creature at its creation"
     size: int
     network: NeuralNetwork
     max_life: int
@@ -90,7 +110,8 @@ class CreatureGeneratedAttributes(TypedDict):
 class Creature(Sprite):
     "A simple creature"
 
-    def __init__(self, creature_id: int, generation: int, timestamp: float, kwargs: Optional[CreatureGeneratedAttributes] = None):
+    def __init__(self, creature_id: int, generation: int, timestamp: float,
+                 kwargs: Optional[CreatureGeneratedAttributes] = None):
         super().__init__()
         self.creature_id = creature_id
         self.generation = generation
@@ -134,7 +155,10 @@ class Creature(Sprite):
         # fixed attributes
         self.life = self.max_life
         self.energy: float = config.CREATURE_STARTING_ENERGY
-        self.max_energy: float = config.CREATURE_MAX_ENERGY_COEFFICIENT * self.size + config.CREATURE_STARTING_ENERGY
+        self.max_energy: float = (
+            config.CREATURE_MAX_ENERGY_COEFFICIENT * self.size
+            + config.CREATURE_STARTING_ENERGY
+        )
         self.digesting = config.CREATURE_MIN_STARTING_DIGESTING_POINTS + self.size
         self.color = self.calcul_color()
         self.surf = Surface((self.size, self.size))
@@ -155,25 +179,38 @@ class Creature(Sprite):
         self.deceleration = 0.0
 
     def can_repro(self, timestamp: float):
-        return self.ready_for_reproduction and timestamp - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
+        "Check if the creature is able to reproduce"
+        return (
+            self.ready_for_reproduction
+            and timestamp - self.last_reproduction > config.CREATURE_REPRO_COOLDOWN
+        )
 
     def has_reproduction_neuron(self):
+        "Check if the creature has a neuron allowing it to reproduce"
         return self.network.has_neuron(ReadyForReproductionActionNeuron)
 
     def can_attack(self, timestamp: float):
-        return self.ready_to_kill and timestamp - self.last_damage_action > config.CREATURE_ATTACK_COOLDOWN
+        "Check if the creature is able to attack"
+        return (
+            self.ready_to_kill
+            and timestamp - self.last_damage_action > config.CREATURE_ATTACK_COOLDOWN
+        )
 
     def has_attack_neuron(self):
+        "Check if the creature has a neuron allowing it to attack"
         return self.network.has_neuron(ReadyToAttackActionNeuron)
 
     def calcul_color(self) -> Color:
         "Calcul the creature color based on its specs"
-        life = min(255, 225 * self.max_life / 130 + 30)
-        neurons_count = min(255, 30 + 225 * self.network.neurons_count / (config.CREATURES_MAX_CONNECTIONS + 5))
         has_attack = 220 if self.has_attack_neuron() else 90
+        life = min(255, 225 * self.max_life / 130 + 30)
+        neurons_count = min(255,
+            40 + 215 * self.network.neurons_count / config.CREATURES_MAX_CONNECTIONS
+        )
         return Color(f'#{int(has_attack):02X}{int(life):02X}{int(neurons_count):02X}')
 
     def update_network(self, context: "ContextManager"):
+        "Update the creature network inputs and outputs, then execute the corresponding actions"
         self.network.update_input(self, context)
         self.network.tick()
         self.network.act(self)
@@ -250,21 +287,32 @@ class Creature(Sprite):
                     (centerx + size,  centery + size),  # bottom right
                     (centerx + size,  centery + space)  # right center bottom
                     )
-    
+
     def draw_vision_cone(self, surface: Surface):
         "Draw a cone representing the entity vision, based on the vision distance and angle"
         # draw the 2 lines
-        draw.line(surface, "aqua", self.position, self.position + self.direction.rotate(self.vision_angle/2) * self.vision_distance, width=1)
-        draw.line(surface, "aqua", self.position, self.position + self.direction.rotate(-self.vision_angle/2) * self.vision_distance, width=1)
+        draw.line(surface, "aqua",
+                  self.position,
+                  self.position + self.direction.rotate(self.vision_angle/2) * self.vision_distance,
+                  width=1)
+        draw.line(surface, "aqua",
+                  self.position,
+                  self.position + self.direction.rotate(-self.vision_angle/2)*self.vision_distance,
+                  width=1)
         # draw the circle arc
-        arc_rectangle = Rect(self.position.x - self.vision_distance, self.position.y - self.vision_distance, self.vision_distance * 2, self.vision_distance * 2)
+        arc_rectangle = Rect(
+            self.position.x - self.vision_distance,
+            self.position.y - self.vision_distance,
+            self.vision_distance * 2,
+            self.vision_distance * 2
+        )
         draw.arc(surface, "aqua",
                  rect=arc_rectangle,
                  start_angle=radians(self.direction.angle_to(Vector2(1, 0)) - self.vision_angle/2),
                  stop_angle=radians(self.direction.angle_to(Vector2(1, 0)) + self.vision_angle/2),
                  width=1
                  )
-    
+
     def draw_light_circle(self, surface: Surface):
         "Draw a circle representing the emitted light"
         if self.light_emission > 0:
@@ -277,7 +325,12 @@ class Creature(Sprite):
     def draw_direction(self, surface: Surface):
         "Draw a line representing the entity direction"
         if abs(self.velocity) > 1e-5:
-            draw.line(surface, "red", self.position, self.position + self.direction * abs(self.velocity) * 1000, width=1)
+            draw.line(
+                surface, "red",
+                self.position,
+                self.position + self.direction * self.velocity * 1000,
+                width=1
+            )
 
     def draw(self, surface: Surface, is_selected: bool=False):
         "Draw the sprite"

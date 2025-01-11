@@ -12,6 +12,7 @@ from .mp_utils import CreatureProcessMove, mp_execute_move
 T = TypeVar("T", Creature, FoodPoint)
 
 class ContextManager:
+    "Store the game context and main actions"
 
     def __init__(self):
         self.time = 0.0 # in seconds
@@ -186,7 +187,11 @@ class ContextManager:
         "Get the current light level at the position of a creature"
         value = 0.0
         for neighbor in self.creatures.values():
-            if neighbor.creature_id != creature.creature_id and neighbor.light_emission > 0.0 and creature.position.distance_to(neighbor.position) < neighbor.light_emission:
+            if (
+                neighbor.creature_id != creature.creature_id
+                and neighbor.light_emission > 0.0
+                and creature.position.distance_to(neighbor.position) < neighbor.light_emission
+            ):
                 value += neighbor.light_emission - creature.position.distance_to(neighbor.position)
         return value
 
@@ -220,7 +225,11 @@ class ContextManager:
                     # give 0.3x the energy of each parent to the child
                     child.energy = lost_energy * config.CHILD_INITIAL_ENERGY_PERCENT
                     # set the initial life of the child to 70% of parents avg. life
-                    parents_life = (creature1.life / creature1.max_life + creature2.life / creature2.max_life) / 2
+                    parents_life = (
+                        creature1.life / creature1.max_life
+                        + creature2.life / creature2.max_life
+                    ) / 2
+                    assert 0 <= parents_life <= 1
                     child.life = round(child.max_life * parents_life * config.CHILD_INITIAL_LIFE_PERCENT)
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
@@ -236,7 +245,7 @@ class ContextManager:
             if creature.max_damage > 0 and creature.can_attack(self.time):
                 victim, _ = self.find_closest_entity(creature, self.creatures_grid)
                 if victim is not None:
-                    distance = 1 - creature.position.distance_to(victim.position)/creature.vision_distance
+                    distance = 1 - creature.position.distance_to(victim.position) / creature.vision_distance
                     damages = round(creature.max_damage * distance)
                     if damages != 0:
                         victim.receive_damages(damages)
