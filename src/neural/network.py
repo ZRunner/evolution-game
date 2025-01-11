@@ -1,16 +1,16 @@
 from copy import deepcopy
 from random import choice, randint, random
-from typing import Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
+
 from networkx.exception import NetworkXError
 
-
-from .graph import NeuralNetworkGraph
+from . import actions, inputs
 from .abc import ActionNeuron, InputNeuron, TransitionNeuron
-from . import inputs, actions
+from .graph import NeuralNetworkGraph
 
 if TYPE_CHECKING:
-    from creature import Creature
     from context_manager import ContextManager
+    from creature import Creature
 
 INPUT_NEURONS = [
     inputs.XPositionInputNeuron(),
@@ -46,7 +46,7 @@ def merge_wires(set_1, set_2):
     neurons_map: dict[str, AnyNeuron] = {}
     for wire in set_1 + set_2:
         source = neurons_map.get(wire[0].name, wire[0])
-        destination: TransitionNeuron = neurons_map.get(wire[2].name, wire[2]) # type: ignore       
+        destination: TransitionNeuron = neurons_map.get(wire[2].name, wire[2]) # type: ignore
         if not any(w[0] == source and w[2] == destination for w in wires):
             wires.append((source, wire[1], destination))
             neurons_map[source.name] = source
@@ -60,7 +60,10 @@ class NeuralNetworkGenerationAgent:
     def merge(cls, parent1: "NeuralNetwork", parent2: "NeuralNetwork"):
         "Create a new neural network from 2 given parents"
         new_network = cls(0, 0)
-        new_network.connections_number = randint(min(len(parent1.wires), len(parent2.wires)), max(len(parent1.wires), len(parent2.wires)))
+        new_network.connections_number = randint(
+            min(len(parent1.wires), len(parent2.wires)),
+            max(len(parent1.wires), len(parent2.wires))
+        )
 
         new_network.graph = NeuralNetworkGraph()
         new_network.wires.clear()
@@ -74,7 +77,11 @@ class NeuralNetworkGenerationAgent:
             i += 1
             j = 0
             target_connections_number = min(len(wires_pool), new_network.connections_number + 2)
-            while len(new_network.wires) < target_connections_number or len(new_network.input_neurons) == 0 or len(new_network.output_neurons) == 0:
+            while (
+                len(new_network.wires) < target_connections_number
+                or len(new_network.input_neurons) == 0
+                or len(new_network.output_neurons) == 0
+            ):
                 wire = choice([w for w in wires_pool if w not in new_network.wires])
                 new_network.add_wire(*wire)
                 j += 1
@@ -83,7 +90,7 @@ class NeuralNetworkGenerationAgent:
             new_network.cleanup_wires()
             if i > 1000:
                 raise ValueError("Too many iterations")
-        
+
         return new_network.wires
 
 
@@ -100,14 +107,18 @@ class NeuralNetworkGenerationAgent:
 
         self.input_pool = deepcopy(INPUT_NEURONS)
         self.output_pool = deepcopy(ACTION_NEURONS)
-    
+
     def generate(self):
         "Actually add more neurons into the network, and make sure we have enough connections"
         # if no connection is required, return an empty network
         if self.connections_number == 0:
             return []
         i = 0
-        while len(self.wires) < self.connections_number or len(self.input_neurons) == 0 or len(self.output_neurons) == 0:
+        while (
+            len(self.wires) < self.connections_number
+            or len(self.input_neurons) == 0
+            or len(self.output_neurons) == 0
+        ):
             i += 1
             if i > 1000:
                 raise ValueError("Too many iterations")
@@ -118,12 +129,12 @@ class NeuralNetworkGenerationAgent:
                 self.transition_neurons + self.output_pool  # type: ignore
             )
             self.add_wire(input_n, random()*4-2, output_n)
-        
+
         self.cleanup_wires()
         if len(self.wires) < self.connections_number:
             self.generate()
         return self.wires
-    
+
     def cleanup_wires(self):
         "Remove useless wires"
         to_remove: set[AnyNeuron] = set()
@@ -151,9 +162,13 @@ class NeuralNetworkGenerationAgent:
 
         for neuron in to_remove:
             self.remove_neuron(neuron)
-        
+
         # make sure to always have at least one moving neuron
-        moving_neurons = [neuron for neuron in self.output_neurons if isinstance(neuron, actions.MoveActionNeuron)]
+        moving_neurons = [
+            neuron
+            for neuron in self.output_neurons
+            if isinstance(neuron, actions.MoveActionNeuron)
+        ]
         if len(moving_neurons) == 0 and len(self.output_neurons) > 0:
             random_neuron = choice(self.output_neurons)
             to_remove.add(random_neuron)
@@ -161,14 +176,14 @@ class NeuralNetworkGenerationAgent:
 
         if len(to_remove) > 0:
             self.cleanup_wires()
-    
+
     def check_connecion_exists(self, origin: AnyNeuron, direction: TransitionNeuron):
         "Check if a connection already exists between 2 neurons"
         for wire in self.wires:
             if wire[0] == origin and wire[2] == direction:
                 return True
-        return False 
-    
+        return False
+
     def add_wire(self, origin: AnyNeuron, weight: float, direction: TransitionNeuron):
         "Add a connection between two neurons"
         # avoid duplications
@@ -190,7 +205,7 @@ class NeuralNetworkGenerationAgent:
     def input_neurons(self):
         "List of input neurons"
         return [neuron for neuron, _, _ in self.wires if isinstance(neuron, InputNeuron)]
-    
+
     @property
     def output_neurons(self):
         "List of output (action) neurons"
@@ -223,7 +238,6 @@ class NeuralNetwork:
 
         new_element.last_updated = set(new_element.input_neurons)
         return new_element
-        
 
     def __init__(self, connections: int, max_hidden_neurons: int):
         self.graph = NeuralNetworkGraph()
@@ -288,20 +302,20 @@ class NeuralNetwork:
                 if isinstance(n, neuron_type):
                     return True
         return False
-    
+
     def get_action_value(self, name: str) -> Optional[float]:
         "Get the value of an action neuron by its name"
         matching = [neuron for neuron in self.output_neurons if neuron.name == name]
         if len(matching) == 0:
             return None
         return matching[0].value
-    
+
     def update_input(self, subject: "Creature", context: "ContextManager"):
         "Update the input neurons with the creature data"
         for neuron in self.input_neurons:
             neuron.update(subject, context)
         self.last_updated |= set(self.input_neurons)
-    
+
     def act(self, subject: "Creature"):
         "Trigger every action"
         for neuron in self.output_neurons:

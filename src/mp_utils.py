@@ -24,7 +24,7 @@ class CreatureProcessMove:
         self.pos = creature.position
         self.energy = creature.energy
         self.light_emission = creature.light_emission
-    
+
     def move(self, delta_t: int):
         "delta_t is time since last move in milliseconds"
         self._update_acceleration(delta_t)
@@ -33,9 +33,9 @@ class CreatureProcessMove:
         new_pos = self.pos + 0.5 * self.direction * self.velocity * delta_t
         self._update_energy(new_pos, delta_t)
         self._update_position(new_pos)
-    
-    def _update_acceleration(self, delta_t: int):
-        "Update the acceleration vector based on the given acceleration (from action neurons) and friction"
+
+    def _update_acceleration(self, _delta_t: int):
+        "Update the acc. vector based on the given acceleration (from action neurons) and friction"
         # calculate friction to apply to acceleration
         fr_max = config.FRICTION * sqrt(self.size) * sign(self.acceleration_from_neuron)
         if abs(fr_max) > abs(self.acceleration_from_neuron):
@@ -46,7 +46,7 @@ class CreatureProcessMove:
         # apply max acceleration control
         if abs(self.acceleration) > config.MAX_CREATURE_ACC:
             self.acceleration = config.MAX_CREATURE_ACC * sign(self.acceleration)
-    
+
     def _update_velocity(self, delta_t: int):
         self.velocity += self.acceleration / 100 * delta_t
         # calculate deceleration from config and current direction
@@ -56,26 +56,26 @@ class CreatureProcessMove:
             self.deceleration = self.velocity * 0.95
         # apply deceleration
         self.velocity -= self.deceleration
-        
+
         # apply max speed control
         if abs(self.velocity) > config.MAX_CREATURE_VEL:
             self.velocity = config.MAX_CREATURE_VEL * sign(self.velocity)
-    
+
     def _update_direction(self, delta_t: int):
         self.direction = self.direction.rotate(self.rotation_from_neuron * delta_t)
-    
+
     def _update_energy(self, new_pos: Vector2, delta_t: int):
         distance = new_pos.distance_to(self.pos)
         if distance > 1e-5:
-            self.energy -= distance * pow(self.size, 1.2) / (3.2 * delta_t)
+            self.energy -= pow(distance, 1.5) * pow(self.size, 1.2) / (3.2 * delta_t)
         else: # if creature is immobile, make it hungry
             self.energy -= config.CREATURE_STILL_ENERGY * delta_t/1000
-        
+
         # remove energy due to light emission
         light_points = self.light_emission * delta_t / 1000
         if light_points > 0:
             self.energy -= light_points / 700
-    
+
     def _update_position(self, new_pos: Vector2):
         "Make sure the creature stays in the screen, then apply the given position"
         if new_pos.x > config.WIDTH:
@@ -88,8 +88,9 @@ class CreatureProcessMove:
             new_pos.y = config.HEIGHT
 
         self.pos = new_pos
-    
+
     def apply_to_creature(self, creature: "Creature"):
+        "Apply the calculated changes to the given creature"
         creature.acceleration_from_neuron = self.acceleration_from_neuron
         creature.rotation_from_neuron = self.rotation_from_neuron
         creature.acceleration = self.acceleration

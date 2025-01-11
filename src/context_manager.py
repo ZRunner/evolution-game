@@ -14,8 +14,10 @@ T = TypeVar("T", Creature, FoodPoint)
 class ContextManager:
 
     def __init__(self):
-        self.time = 0.0
-        self.creatures: dict[int, Creature] = {i: Creature(i, 0, 0.0) for i in range(config.INITIAL_CREATURES_COUNT)}
+        self.time = 0.0 # in seconds
+        self.creatures: dict[int, Creature] = {
+            i: Creature(i, 0, 0.0) for i in range(config.INITIAL_CREATURES_COUNT)
+        }
         self.highest_creature_id = config.INITIAL_CREATURES_COUNT - 1
         self.food_generators: list[FoodGenerator] = [
             FoodGenerator(None, 160, 0.8),
@@ -30,7 +32,7 @@ class ContextManager:
         self.creatures_grid: dict[tuple[int, int], list[Creature]] = {
             (x, y): [] for x in range(self.grid_size[0]) for y in range(self.grid_size[1])
         }
-    
+
     def get_grid_cell(self, position: pygame.Vector2) -> tuple[int, int]:
         "Return the grid cell of a position"
         grid_x = int(position.x) // self.grid_cell_size % self.grid_size[0]
@@ -44,7 +46,7 @@ class ContextManager:
             pygame.draw.line(screen, color, (x, 0), (x, config.HEIGHT))
         for y in range(self.grid_cell_size, config.HEIGHT, self.grid_cell_size):
             pygame.draw.line(screen, color, (0, y), (config.WIDTH, y))
-    
+
     def update_creatures_grid(self):
         "update the creatures grid map based on each creature position"
         for creatures_list in self.creatures_grid.values():
@@ -52,7 +54,7 @@ class ContextManager:
         for creature in self.creatures.values():
             grid_cell = self.get_grid_cell(creature.position)
             self.creatures_grid[grid_cell].append(creature)
-    
+
     def find_visible_creatures(self, creature: Creature):
         "Find the closest entity from a list of entities"
         entities: set[Creature] = set()
@@ -84,9 +86,9 @@ class ContextManager:
                         if distance <= creature.vision_distance:
                             # Update closest entity
                             entities.add(entity)
-        
+
         return entities
-    
+
     def find_closest_entity(self, creature: Creature, entities_grid: dict[tuple[int, int], list[T]]) -> tuple[Optional[T], float]:
         "Find the closest entity from a list of entities"
         min_distance = float('inf')
@@ -120,7 +122,7 @@ class ContextManager:
                             # Update closest entity
                             min_distance = distance
                             closest_entity = entity
-        
+
         return closest_entity, min_distance
 
     def update_creatures_energies(self):
@@ -134,7 +136,7 @@ class ContextManager:
             del self.creatures[entity_id]
         if to_die:
             print(len(to_die), "creature(s) died")
-    
+
     def generate_initial_food(self):
         "Generate initial food points"
         for generator in self.food_generators:
@@ -142,7 +144,7 @@ class ContextManager:
                 if food := generator.tick():
                     grid_cell = self.get_grid_cell(food.position)
                     self.foods_grid[grid_cell].append(food)
-    
+
     def generate_food(self):
         "Generate food points around food generators"
         existing_food_count = sum(len(foods) for foods in self.foods_grid.values())
@@ -223,7 +225,7 @@ class ContextManager:
         children_list = list(children)[:10]
         for child in children_list:
             self.creatures[child.creature_id] = child
-        if len(children_list):
+        if children_list:
             print(len(children_list), "new creature(s) born")
 
     def attack_creatures(self):
@@ -241,6 +243,7 @@ class ContextManager:
                         victim.last_damage_received = self.time
 
     def move_creatures(self, pool: Pool, delta_t: int):
+        "Update creature networks and move them in batch using multiprocessing"
         arguments: list[tuple[CreatureProcessMove, int]] = []
         for creature in self.creatures.values():
             creature.update_network(self)

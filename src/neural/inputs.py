@@ -1,7 +1,9 @@
 import math
 from random import random
 from typing import Optional
+
 from .abc import InputNeuron, sigmoid
+
 
 class XPositionInputNeuron(InputNeuron):
     "Corresponds to the X position of the creature"
