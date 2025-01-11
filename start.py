@@ -2,16 +2,16 @@
 import sys
 
 from src.neural.graph import AnyNeuron
+
 py_version = sys.version_info
 if py_version.major != 3 or py_version.minor < 10:
     print("You must use at least Python 3.10!", file=sys.stderr)
     sys.exit(1)
 
+import gc
+from collections.abc import Iterable
 from multiprocessing import Pool
 from typing import Optional
-from collections.abc import Iterable
-
-import gc
 
 import pygame
 
