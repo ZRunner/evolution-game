@@ -66,10 +66,11 @@ class CreatureProcessMove:
 
     def _update_energy(self, new_pos: Vector2, delta_t: int):
         distance = new_pos.distance_to(self.pos)
+        # base energy consumption from existing
+        self.energy -= config.CREATURE_STILL_ENERGY * pow(self.size, 0.7) * delta_t/1000
         if distance > 1e-5:
-            self.energy -= pow(distance, 1.5) * pow(self.size, 1.2) / (3.2 * delta_t)
-        else: # if creature is immobile, make it hungry
-            self.energy -= config.CREATURE_STILL_ENERGY * delta_t/1000
+            # energy consumption from movement
+            self.energy -= pow(distance, 1.3) * pow(self.size, 1.2) / (3.2 * delta_t)
 
         # remove energy due to light emission
         light_points = self.light_emission * delta_t / 1000
@@ -103,6 +104,7 @@ class CreatureProcessMove:
         return creature
 
 def mp_execute_move(arg: tuple[CreatureProcessMove, int]):
+    "Update creature acceleration, velocity, direction, energy and position"
     creature, delta_t = arg
     creature.move(delta_t)
     return creature
