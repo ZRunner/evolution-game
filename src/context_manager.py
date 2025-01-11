@@ -8,6 +8,7 @@ from . import config
 from .creature import Creature, creature_reproduction
 from .food import FoodGenerator, FoodPoint
 from .mp_utils import CreatureProcessMove, mp_execute_move
+from .utils import get_toroidal_distance
 
 T = TypeVar("T", Creature, FoodPoint)
 
@@ -116,9 +117,10 @@ class ContextManager:
                     angle = creature.direction.angle_to(to_other_entity)
                     if abs(angle) <= creature.vision_angle / 2:
                         # Compute distance (toroidal)
-                        dx = abs(entity.position.x - creature.position.x) % config.WIDTH
-                        dy = abs(entity.position.y - creature.position.y) % config.HEIGHT
-                        distance = math.sqrt(dx ** 2 + dy ** 2)
+                        distance = get_toroidal_distance(
+                            creature.position, entity.position,
+                            config.WIDTH, config.HEIGHT
+                        )
                         if distance <= min(min_distance, creature.vision_distance):
                             # Update closest entity
                             min_distance = distance
@@ -128,11 +130,11 @@ class ContextManager:
 
     def update_creatures_energies(self):
         "Update creatures energies and life, and remove killed ones"
-        to_die: list[int] = []
+        to_die: set[int] = set()
         for entity in self.creatures.values():
             entity.update_energy()
             if entity.life <= 0:
-                to_die.append(entity.creature_id)
+                to_die.add(entity.creature_id)
         for entity_id in to_die:
             del self.creatures[entity_id]
         if to_die:
@@ -151,7 +153,10 @@ class ContextManager:
         existing_food_count = sum(len(foods) for foods in self.foods_grid.values())
         max_to_generate = min(
             config.MAX_FOOD_GENERATED_PER_CYCLE,
-            round((config.MAX_FOOD_QUANTITY - existing_food_count) / len(self.food_generators) * 1.5)
+            round(
+                (config.MAX_FOOD_QUANTITY - existing_food_count)
+                / len(self.food_generators) * 1.5
+            )
         )
         for generator in self.food_generators:
             for _ in range(max_to_generate):
@@ -190,9 +195,13 @@ class ContextManager:
             if (
                 neighbor.creature_id != creature.creature_id
                 and neighbor.light_emission > 0.0
-                and creature.position.distance_to(neighbor.position) < neighbor.light_emission
             ):
-                value += neighbor.light_emission - creature.position.distance_to(neighbor.position)
+                neighbor_distance = get_toroidal_distance(
+                    creature.position, neighbor.position,
+                    config.WIDTH, config.HEIGHT
+                )
+                if neighbor_distance < neighbor.light_emission:
+                    value += neighbor.light_emission - neighbor_distance
         return value
 
     def reproduce_creatures(self):
@@ -230,7 +239,10 @@ class ContextManager:
                         + creature2.life / creature2.max_life
                     ) / 2
                     assert 0 <= parents_life <= 1
-                    child.life = round(child.max_life * parents_life * config.CHILD_INITIAL_LIFE_PERCENT)
+                    child.life = min(
+                        round(child.max_life * parents_life * config.CHILD_INITIAL_LIFE_PERCENT),
+                        child.max_life
+                    )
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
         for child in children_list:
@@ -241,16 +253,28 @@ class ContextManager:
     def attack_creatures(self):
         "If one creature is ready to attack, make it attack the nearest creature"
         creatures = list(self.creatures.values())
+        to_die: set[int] = set()
         for creature in creatures:
             if creature.max_damage > 0 and creature.can_attack(self.time):
                 victim, _ = self.find_closest_entity(creature, self.creatures_grid)
-                if victim is not None:
-                    distance = 1 - creature.position.distance_to(victim.position) / creature.vision_distance
-                    damages = round(creature.max_damage * distance)
+                if victim is not None and victim.creature_id not in to_die:
+                    distance = get_toroidal_distance(
+                        creature.position, victim.position,
+                        config.WIDTH, config.HEIGHT
+                    )
+                    relative_distance = 1 - distance / creature.vision_distance
+                    damages = round(creature.max_damage * relative_distance)
+                    assert damages >= 0
                     if damages != 0:
                         victim.receive_damages(damages)
                         creature.last_damage_action = self.time
                         victim.last_damage_received = self.time
+                        if victim.life <= 0:
+                            to_die.add(victim.creature_id)
+        for entity_id in to_die:
+            del self.creatures[entity_id]
+        if to_die:
+            print(len(to_die), "creature(s) died")
 
     def move_creatures(self, pool: Pool, delta_t: int):
         "Update creature networks and move them in batch using multiprocessing"
