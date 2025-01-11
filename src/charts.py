@@ -152,10 +152,10 @@ class ChartsManager:
         self.datas["fps"].append_value(ts, clock.get_fps())
         # Creatures Velocity
         if len(creatures) > 0:
-            vel = [creature.velocity for creature in creatures]
+            vel = [abs(creature.velocity) for creature in creatures]
             self.datas["avg_vel"].append_value(ts, sum(vel)/len(vel))
             # Creatures Acceleration
-            acc = [creature.acceleration for creature in creatures]
+            acc = [abs(creature.acceleration) for creature in creatures]
             self.datas["avg_acc"].append_value(ts, sum(acc)/len(acc))
             # Creatures Count
             self.datas["creatures_count"].append_value(ts, len(creatures))
