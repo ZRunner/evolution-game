@@ -56,7 +56,7 @@ class ChartData:
         self.timestamps.append(timestamp)
         self.data.append(value)
 
-    def get_axis(self, window: int = 90):
+    def get_axis(self, window: int):
         """Get X and Y values for a given time frame
         Window is the time frame in seconds"""
         if len(self.timestamps) == 0:
@@ -113,7 +113,7 @@ class ChartsManager:
 
     def get_chart(self):
         "Create data rendering, ready to be displayed"
-        x, y = self.datas[self.data_index].get_axis()
+        x, y = self.datas[self.data_index].get_axis(window=config.GRAPH_WINDOW)
         if len(x) != 0:
             self.lines[0].set_data(x, y)
             self.ax.set_xlim(left=x[0], right=x[-1])
