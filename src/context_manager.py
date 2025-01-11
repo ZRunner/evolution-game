@@ -219,8 +219,9 @@ class ContextManager:
                     creature2.energy -= lost_energy
                     # give 0.3x the energy of each parent to the child
                     child.energy = lost_energy * config.CHILD_INITIAL_ENERGY_PERCENT
-                    # set the initial life of the child to 70%
-                    child.life = round(child.max_life * config.CHILD_INITIAL_LIFE_PERCENT)
+                    # set the initial life of the child to 70% of parents avg. life
+                    parents_life = (creature1.life / creature1.max_life + creature2.life / creature2.max_life) / 2
+                    child.life = round(child.max_life * parents_life * config.CHILD_INITIAL_LIFE_PERCENT)
         # add every new child into the Great List of Creatures
         children_list = list(children)[:10]
         for child in children_list:

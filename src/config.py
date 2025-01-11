@@ -19,6 +19,9 @@ MEMORY_DEBUG: bool = False
 # Show the map grid (for debug purposes)
 SHOW_GRID: bool = False
 
+# Seconds of historical data shown in graphs
+GRAPH_WINDOW: int = 150
+
 # Friction coefficient used in acceleration calculs
 FRICTION: float = 0.9
 
@@ -50,7 +53,7 @@ CREATURE_MAX_ENERGY_COEFFICIENT: int = 30
 CREATURE_MIN_STARTING_DIGESTING_POINTS: int = 6
 
 # Maximum creature acceleration (on each axis)
-MAX_CREATURE_ACC: float = 0.0002
+MAX_CREATURE_ACC: float = 0.001
 
 # Maximum creature veolocity (on each axis)
 MAX_CREATURE_VEL: float = 0.07
@@ -69,7 +72,7 @@ CREATURE_SIZE_AVG: int = 4
 CREATURE_SIZE_SIGMA: int = 3
 
 # Average and sigma max damages done by a creature (gaussian curve)
-CREATURE_DMG_AVG: int = 3
+CREATURE_DMG_AVG: int = 5
 CREATURE_DMG_SIGMA: int = 2
 
 # Minimum connections number in a creature neural network
@@ -94,7 +97,7 @@ CREATURE_ATTACK_COOLDOWN: float = 1.0
 CREATURE_MIN_REPRODUCTION_STATE: float = 0.1
 
 # Minimum time in seconds between two reproductions from the same creature
-CREATURE_REPRO_COOLDOWN: int = 25
+CREATURE_REPRO_COOLDOWN: int = 20
 
 # Energy consumed by a creature when reproducing, multiplied by the size of the child
 CREATURE_REPRO_ENERGY_FACTOR: float = 10.0
@@ -102,5 +105,5 @@ CREATURE_REPRO_ENERGY_FACTOR: float = 10.0
 # Initial energy percentage of a child (multiplied by the energy lost by both parents)
 CHILD_INITIAL_ENERGY_PERCENT: float = 0.6
 
-# Initial life percentage of a child
+# Initial life percentage of a child (multiplied by the average life percentage of both parents)
 CHILD_INITIAL_LIFE_PERCENT: float = 0.7

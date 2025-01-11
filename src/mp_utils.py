@@ -70,7 +70,7 @@ class CreatureProcessMove:
         self.energy -= config.CREATURE_STILL_ENERGY * pow(self.size, 0.7) * delta_t/1000
         if distance > 1e-5:
             # energy consumption from movement
-            self.energy -= pow(distance, 1.3) * pow(self.size, 1.2) / (3.2 * delta_t)
+            self.energy -= pow(distance, 1.3) * pow(self.size, 1.1) / (4 * delta_t)
 
         # remove energy due to light emission
         light_points = self.light_emission * delta_t / 1000
