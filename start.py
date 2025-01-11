@@ -1,17 +1,15 @@
 # check python version
 import sys
 
-from src.neural.graph import AnyNeuron
-
 py_version = sys.version_info
 if py_version.major != 3 or py_version.minor < 10:
     print("You must use at least Python 3.10!", file=sys.stderr)
     sys.exit(1)
 
 import gc
-from collections.abc import Iterable
 from multiprocessing import Pool
-from typing import Optional
+from collections import defaultdict
+from typing import Optional, Iterable
 
 import pygame
 
@@ -22,12 +20,12 @@ from src.creature import Creature
 from src.creatures_panel import PanelsManager
 from src.game_events import GENERATE_FOOD, UPDATE_CREATURES_ENERGIES, events
 from src.interface import display_elapsed_time, display_fps
+from src.neural.graph import AnyNeuron
 
 if config.MEMORY_DEBUG:
-    from collections import defaultdict
     before = defaultdict(int)
     after = defaultdict(int)
-    before_ids = set()
+    before_ids: set[int] = set()
 
 pygame.init()
 
@@ -67,7 +65,7 @@ def main():
     # launch events
     for event_type, frequency in events.items():
         pygame.time.set_timer(event_type, frequency)
-    
+
     if config.MEMORY_DEBUG:
         counter  = 0
         for i in gc.get_objects():
@@ -118,7 +116,7 @@ def main():
             # draw lights
             for entity in context.creatures.values():
                 entity.draw_light_circle(window_surface)
-            
+
             # draw the grid
             if config.SHOW_GRID:
                 context.draw_grid(window_surface)
@@ -149,8 +147,10 @@ def main():
 
             if selected_creature_id is not None:
                 if creature := next(
-                    (c for c in context.creatures.values() if c.creature_id == selected_creature_id),
-                        None):
+                    (c
+                     for c in context.creatures.values()
+                     if c.creature_id == selected_creature_id
+                     ), None):
                     panels.draw_creature_panel(creature, context)
                 else:
                     selected_creature_id = None
@@ -169,21 +169,28 @@ def main():
             pygame.display.update()
             delta_t = round(clock.tick(config.FPS) * config.GAME_SPEED)
 
+
+def write_memory_debug(
+        before_ids_set: set[int], before_dict: dict[type, int], after_dict: dict[type, int]):
+    "Print the memory debug data"
+    filtered = []
+    after_objs = gc.get_objects()
+    for i in after_objs:
+        after_dict[type(i)] += 1 # type: ignore
+        if id(i) not in before_ids_set:
+            if type(i) in {tuple, dict, list, AnyNeuron} and "homebrew" not in str(i):
+                filtered.append((i, type(i)))
+    del before_ids_set, after_objs
+    diff = sorted(
+        ((k, after_dict[k] - before_dict[k]) # type: ignore
+        for k in after_dict # type: ignore
+        if abs(after_dict[k] - before_dict[k]) > 10 # type: ignore
+    ), key=lambda x: x[1], reverse=True)
+    print("\n".join(str(x) for x in diff))
+    print("end")
+
+
 if __name__ == '__main__':
     main()
     if config.MEMORY_DEBUG:
-        filtered = []
-        after_objs = gc.get_objects()
-        for i in after_objs:
-            after[type(i)] += 1 # type: ignore
-            if id(i) not in before_ids:
-                if type(i) in {tuple, dict, list, AnyNeuron} and "homebrew" not in str(i):
-                    filtered.append((i, type(i)))
-        del before_ids, after_objs
-        diff = sorted(
-            ((k, after[k] - before[k]) # type: ignore
-            for k in after # type: ignore
-            if abs(after[k] - before[k]) > 10 # type: ignore
-        ), key=lambda x: x[1], reverse=True)
-        print("\n".join(str(x) for x in diff))
-        print("end")
+        write_memory_debug(before_ids, before, after)

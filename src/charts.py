@@ -11,9 +11,8 @@ from pygame.font import SysFont
 from pygame.surface import Surface
 from pygame.time import Clock
 
-from .context_manager import ContextManager
-
 from . import config
+from .context_manager import ContextManager
 
 matplotlib.use("Agg")
 
@@ -57,7 +56,7 @@ class ChartData:
         self.timestamps.append(timestamp)
         self.data.append(value)
 
-    def get_axis(self, window: int = 30):
+    def get_axis(self, window: int = 90):
         """Get X and Y values for a given time frame
         Window is the time frame in seconds"""
         if len(self.timestamps) == 0:
@@ -100,7 +99,7 @@ class ChartsManager:
         self.fig.patch.set_alpha(0.7)  # type: ignore
         self.ax: plt.Axes = self.fig.gca()
         self.ax.patch.set_alpha(0)  # type: ignore
-    
+
         self.lines: list[Line2D] = self.ax.plot(np.empty(10), np.empty(10), lw=2)
 
         self.canvas = agg.FigureCanvasAgg(self.fig)
