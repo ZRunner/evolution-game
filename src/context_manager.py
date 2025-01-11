@@ -179,7 +179,10 @@ class ContextManager:
                     if creature.energy > creature.max_energy:
                         creature.energy = creature.max_energy
                         return
-                    if creature.rectangle.colliderect(food.rectangle):
+                    if (
+                        creature.rectangle.colliderect(food.rectangle)
+                        and creature.max_digesting - creature.digesting > 0.5
+                    ):
                         creature.eat(food)
                         self.foods_grid[cell].remove(food)
 

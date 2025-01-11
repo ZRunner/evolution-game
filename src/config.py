@@ -52,6 +52,9 @@ CREATURE_MAX_ENERGY_COEFFICIENT: int = 30
 # Minimum food ready to be digested at the beginning
 CREATURE_MIN_STARTING_DIGESTING_POINTS: int = 6
 
+# Coefficient to determine the creature stomach capacity (multiplied by its maximum energy)
+CREATURE_STOMACH_CAPACITY_COEFFICIENT: float = 0.8
+
 # Maximum creature acceleration (on each axis)
 MAX_CREATURE_ACC: float = 0.001
 

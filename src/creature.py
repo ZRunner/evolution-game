@@ -155,11 +155,12 @@ class Creature(Sprite):
         # fixed attributes
         self.life = self.max_life
         self.energy: float = config.CREATURE_STARTING_ENERGY
-        self.max_energy: float = (
-            config.CREATURE_MAX_ENERGY_COEFFICIENT * self.size
+        self.max_energy: int = (
+            round(config.CREATURE_MAX_ENERGY_COEFFICIENT * pow(self.size, 0.85))
             + config.CREATURE_STARTING_ENERGY
         )
         self.digesting = config.CREATURE_MIN_STARTING_DIGESTING_POINTS + self.size
+        self.max_digesting = round(self.max_energy * config.CREATURE_STOMACH_CAPACITY_COEFFICIENT)
         self.color = self.calcul_color()
         self.surf = Surface((self.size, self.size))
         self.surf.fill(self.color)
@@ -217,12 +218,16 @@ class Creature(Sprite):
 
     def update_energy(self):
         "Update the creature energy, life and digestion"
-        # dugestion
+        # digestion
         points = min(self.digesting, self.digestion_speed)
         if points > 0:
-            self.digesting -= points
+            added_energy_points = min(
+                points * self.digestion_efficiency,
+                self.max_energy - self.energy
+            )
+            self.digesting -= added_energy_points / self.digestion_efficiency
             self.digesting = round(self.digesting, 5)
-            self.energy += points * self.digestion_efficiency
+            self.energy += added_energy_points
         # life damages
         if self.energy <= -10:
             self.life += round(self.energy / 10)
@@ -235,7 +240,7 @@ class Creature(Sprite):
 
     def eat(self, food: "FoodPoint"):
         "Eat a food point"
-        self.digesting += food.quantity
+        self.digesting = min(self.digesting + food.quantity, self.max_digesting)
 
     def receive_damages(self, points: int):
         "Register a loss of life points due to another creature hurting it"
