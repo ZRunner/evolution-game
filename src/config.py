@@ -1,9 +1,8 @@
 # Window dimensions
 from typing import Optional
 
-
-HEIGHT: int = 800
-WIDTH: int = 1200
+HEIGHT: int = 1200
+WIDTH: int = 2200
 
 # Number of parallel processes to use, None to get 1 per CPU
 PROCESSES_COUNT: Optional[int] = None
@@ -60,7 +59,7 @@ MAX_CREATURE_VEL: float = 0.07
 CREATURE_DECELERATION: float = 5e-7
 
 # Amount of energy lost by idle creatures each second
-CREATURE_STILL_ENERGY: float = 0.15
+CREATURE_STILL_ENERGY: float = 0.08
 
 # Minimum creature size
 MIN_CREATURE_SIZE: int = 1
@@ -77,10 +76,10 @@ CREATURE_DMG_SIGMA: int = 2
 CREATURES_MIN_CONNECTIONS: int = 2
 
 # Maximum connections number in a creature neural network
-CREATURES_MAX_CONNECTIONS: int = 15
+CREATURES_MAX_CONNECTIONS: int = 30
 
 # Maximum transitions ("hidden") neurons in a creature neural network
-CREATURES_MAX_HIDDEN_NEURONS: int = 25
+CREATURES_MAX_HIDDEN_NEURONS: int = 30
 
 # Maximum visibility of emitted light
 CREATURE_MAX_LIGHT_DISTANCE_EMISSION: int = 200
