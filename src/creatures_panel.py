@@ -53,7 +53,11 @@ class PanelsManager:
             damage_label = "No (disabled neuron)"
         else:
             damage_label = "No (no neuron)"
-        grid_position = [pos for pos, creatures in context.creatures_grid.items() if creature in creatures][0]
+        grid_position = [
+            pos
+            for pos, creatures in context.creatures_grid.items()
+            if creature in creatures
+        ][0]
         # Info
         texts = [
             f"Generation {creature.generation}",
@@ -65,7 +69,7 @@ class PanelsManager:
             f"Direction: {creature.direction.as_polar()[1]:.0f}° ({creature.direction.x:.3f}, {creature.direction.y:.3f})",
             f"Life: {creature.life} / {creature.max_life} (regen cost: {creature.life_regen_cost})",
             f"Energy: {creature.energy:.1f} / {creature.max_energy}",
-            f"Digestion: {creature.digesting} (efficiency: {creature.digestion_efficiency}, speed: {creature.digestion_speed})",
+            f"Digestion: {creature.digesting:.1f} / {creature.max_digesting} (efficiency: {creature.digestion_efficiency}, speed: {creature.digestion_speed})",
             f"Vision: {creature.vision_distance:.0f}p - {creature.vision_angle}°",
             f"Light emission: {creature.light_emission}",
             f"Ready for reproduction: {repr_label}",

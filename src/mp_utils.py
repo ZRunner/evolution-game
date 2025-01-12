@@ -36,12 +36,14 @@ class CreatureProcessMove:
 
     def _update_acceleration(self, _delta_t: int):
         "Update the acc. vector based on the given acceleration (from action neurons) and friction"
+        acc_from_neuron = self.acceleration_from_neuron / 12
+        acc_from_neuron_sign = sign(acc_from_neuron)
         # calculate friction to apply to acceleration
-        fr_max = config.FRICTION * sqrt(self.size) * sign(self.acceleration_from_neuron)
-        if abs(fr_max) > abs(self.acceleration_from_neuron):
-            fr_max = self.acceleration_from_neuron * 0.95
+        fr_max = config.FRICTION * sqrt(self.size) * acc_from_neuron_sign
+        if abs(fr_max) > abs(acc_from_neuron):
+            fr_max = acc_from_neuron * 0.95
 
-        self.acceleration = (self.acceleration_from_neuron - fr_max) / self.size
+        self.acceleration = (acc_from_neuron - fr_max) / self.size
 
         # apply max acceleration control
         if abs(self.acceleration) > config.MAX_CREATURE_ACC:
@@ -92,8 +94,6 @@ class CreatureProcessMove:
 
     def apply_to_creature(self, creature: "Creature"):
         "Apply the calculated changes to the given creature"
-        creature.acceleration_from_neuron = self.acceleration_from_neuron
-        creature.rotation_from_neuron = self.rotation_from_neuron
         creature.acceleration = self.acceleration
         creature.velocity = self.velocity
         creature.deceleration = self.deceleration

@@ -24,14 +24,14 @@ class EnergyInputNeuron(InputNeuron):
     name = "Energy"
 
     def update(self, subject, context):
-        self.value = sigmoid(subject.energy * 0.1)
+        self.value = sigmoid(subject.energy / subject.max_energy)
 
 class DigestingInputNeuron(InputNeuron):
     "Corresponds to the digesting quantity of the creature"
     name = "Digesting"
 
     def update(self, subject, context):
-        self.value = sigmoid(subject.digesting * 0.02)
+        self.value = sigmoid(subject.digesting / subject.max_digesting)
 
 class SpeedInputNeuron(InputNeuron):
     "Corresponds to the speed of the creature"
